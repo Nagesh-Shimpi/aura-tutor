@@ -14,7 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          streak: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          streak?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          streak?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          score: number
+          topic_id: string
+          total: number
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          score: number
+          topic_id: string
+          total: number
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          score?: number
+          topic_id?: string
+          total?: number
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          explanation: string | null
+          id: string
+          options: Json
+          position: number
+          question: string
+          topic_id: string
+        }
+        Insert: {
+          correct_index: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options: Json
+          position?: number
+          question: string
+          topic_id: string
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          position?: number
+          question?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topic_progress: {
+        Row: {
+          completed: boolean
+          id: string
+          last_visited_at: string
+          progress_percent: number
+          topic_id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          id?: string
+          last_visited_at?: string
+          progress_percent?: number
+          topic_id: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          id?: string
+          last_visited_at?: string
+          progress_percent?: number
+          topic_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_progress_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          ai_generated: boolean
+          category: string
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string
+          difficulty: string
+          icon: string
+          id: string
+          lesson_content: string | null
+          title: string
+        }
+        Insert: {
+          ai_generated?: boolean
+          category: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          difficulty?: string
+          icon?: string
+          id?: string
+          lesson_content?: string | null
+          title: string
+        }
+        Update: {
+          ai_generated?: boolean
+          category?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          difficulty?: string
+          icon?: string
+          id?: string
+          lesson_content?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
