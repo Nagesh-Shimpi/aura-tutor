@@ -1,4 +1,4 @@
-import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon, Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +63,12 @@ export const ChatScreen = () => {
         setMessages(data as Msg[]);
       } else {
         setMessages([{ role: "assistant", content: `Hey ${profile?.display_name?.split(" ")[0] || "there"}! 👋 What would you like to learn today?` }]);
+      }
+      // Consume initial prompt from Home page (if any)
+      const initial = sessionStorage.getItem("ai_tutor_initial_prompt");
+      if (initial) {
+        sessionStorage.removeItem("ai_tutor_initial_prompt");
+        setInput(initial);
       }
     })();
   }, [user?.id]);
@@ -225,7 +231,16 @@ export const ChatScreen = () => {
                 {m.content || <Loader2 className="w-3 h-3 animate-spin" />}
               </div>
               {m.imageUrl && (
-                <img src={m.imageUrl} alt="Generated" className="rounded-xl border border-border/40 max-w-full" />
+                <div className="space-y-1">
+                  <img src={m.imageUrl} alt="Generated" className="rounded-xl border border-border/40 max-w-full" />
+                  <a
+                    href={m.imageUrl}
+                    download={`ai-tutor-${Date.now()}.png`}
+                    className="inline-flex items-center gap-1 text-[9px] text-muted-foreground hover:text-accent"
+                  >
+                    <Download className="w-2.5 h-2.5" /> Save image
+                  </a>
+                </div>
               )}
               {m.role === "assistant" && m.content && !m.imageUrl && (
                 <button
