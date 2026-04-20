@@ -194,6 +194,15 @@ export const ChatScreen = () => {
             <span className="w-1 h-1 bg-accent rounded-full" /> Online
           </p>
         </div>
+        <button
+          onClick={() => {
+            setTtsOn((v) => { if (v) window.speechSynthesis?.cancel(); return !v; });
+          }}
+          className={`w-7 h-7 rounded-full glass flex items-center justify-center ${ttsOn ? "ring-1 ring-accent" : ""}`}
+          title={ttsOn ? "Voice output ON" : "Voice output OFF"}
+        >
+          {ttsOn ? <Volume2 className="w-3 h-3 text-accent" /> : <VolumeX className="w-3 h-3 text-muted-foreground" />}
+        </button>
         {user && (
           <button onClick={clearHistory} className="w-7 h-7 rounded-full glass flex items-center justify-center" title="Clear history">
             <Trash2 className="w-3 h-3 text-muted-foreground" />
