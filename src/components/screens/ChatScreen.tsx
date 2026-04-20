@@ -1,18 +1,50 @@
-import { ArrowLeft, Send, Sparkles, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; imageUrl?: string };
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+// Detect image-generation intent in user text
+const IMAGE_TRIGGERS = /\b(generate|create|draw|show|make|render)\b.*\b(image|picture|illustration|diagram|drawing|photo|pic)\b/i;
 
 export const ChatScreen = () => {
   const { user, profile } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [ttsOn, setTtsOn] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const speakMessage = (text: string) => {
+    if (!("speechSynthesis" in window)) return toast.error("Speech not supported");
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[*_`#>]/g, ""));
+    u.rate = 1; u.lang = "en-US";
+    window.speechSynthesis.speak(u);
+  };
+
+  const startListening = () => {
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return toast.error("Voice input not supported in this browser");
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const r = new SR();
+    r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 1;
+    r.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " : "") + transcript);
+    };
+    r.onerror = () => { setListening(false); toast.error("Voice input error"); };
+    r.onend = () => setListening(false);
+    recognitionRef.current = r;
+    setListening(true);
+    r.start();
+  };
 
   // Load history
   useEffect(() => {
@@ -50,6 +82,31 @@ export const ChatScreen = () => {
     setMessages([{ role: "assistant", content: "Cleared! What's next? ✨" }]);
   };
 
+  const generateImage = async (prompt: string) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        if (resp.status === 429) toast.error("Rate limit hit.");
+        else if (resp.status === 402) toast.error("AI credits exhausted.");
+        else toast.error(data.error || "Image generation failed");
+        return;
+      }
+      const msg: Msg = { role: "assistant", content: `Here's your image: ${prompt}`, imageUrl: data.imageUrl };
+      setMessages((p) => [...p, msg]);
+      if (user) await supabase.from("chat_messages").insert({ user_id: user.id, role: "assistant", content: `[image] ${prompt}` });
+    } catch {
+      toast.error("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -57,8 +114,15 @@ export const ChatScreen = () => {
     const userMsg: Msg = { role: "user", content: text };
     const next = [...messages, userMsg];
     setMessages(next);
-    setLoading(true);
     persist(userMsg);
+
+    if (imageMode || IMAGE_TRIGGERS.test(text)) {
+      setImageMode(false);
+      await generateImage(text);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/chat-tutor`, {
@@ -107,7 +171,10 @@ export const ChatScreen = () => {
           }
         }
       }
-      if (assistant) persist({ role: "assistant", content: assistant });
+      if (assistant) {
+        persist({ role: "assistant", content: assistant });
+        if (ttsOn) speakMessage(assistant);
+      }
     } catch {
       toast.error("Network error");
     } finally {
@@ -130,6 +197,15 @@ export const ChatScreen = () => {
             <span className="w-1 h-1 bg-accent rounded-full" /> Online
           </p>
         </div>
+        <button
+          onClick={() => {
+            setTtsOn((v) => { if (v) window.speechSynthesis?.cancel(); return !v; });
+          }}
+          className={`w-7 h-7 rounded-full glass flex items-center justify-center ${ttsOn ? "ring-1 ring-accent" : ""}`}
+          title={ttsOn ? "Voice output ON" : "Voice output OFF"}
+        >
+          {ttsOn ? <Volume2 className="w-3 h-3 text-accent" /> : <VolumeX className="w-3 h-3 text-muted-foreground" />}
+        </button>
         {user && (
           <button onClick={clearHistory} className="w-7 h-7 rounded-full glass flex items-center justify-center" title="Clear history">
             <Trash2 className="w-3 h-3 text-muted-foreground" />
@@ -140,12 +216,26 @@ export const ChatScreen = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide px-3 py-3 space-y-2.5">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}>
-            <div className={
-              m.role === "user"
-                ? "max-w-[78%] bg-gradient-primary text-white text-[11px] px-3 py-2 rounded-2xl rounded-br-md shadow-md whitespace-pre-wrap"
-                : "max-w-[82%] glass-card text-[11px] px-3 py-2 rounded-2xl rounded-bl-md whitespace-pre-wrap"
-            }>
-              {m.content || <Loader2 className="w-3 h-3 animate-spin" />}
+            <div className="flex flex-col gap-1.5 max-w-[82%]">
+              <div className={
+                m.role === "user"
+                  ? "bg-gradient-primary text-white text-[11px] px-3 py-2 rounded-2xl rounded-br-md shadow-md whitespace-pre-wrap"
+                  : "glass-card text-[11px] px-3 py-2 rounded-2xl rounded-bl-md whitespace-pre-wrap"
+              }>
+                {m.content || <Loader2 className="w-3 h-3 animate-spin" />}
+              </div>
+              {m.imageUrl && (
+                <img src={m.imageUrl} alt="Generated" className="rounded-xl border border-border/40 max-w-full" />
+              )}
+              {m.role === "assistant" && m.content && !m.imageUrl && (
+                <button
+                  onClick={() => speakMessage(m.content)}
+                  className="self-start text-[9px] text-muted-foreground hover:text-accent flex items-center gap-1"
+                  title="Listen"
+                >
+                  <Volume2 className="w-2.5 h-2.5" /> Play
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -162,17 +252,31 @@ export const ChatScreen = () => {
 
       <div className="px-3 pb-4 pt-2">
         <div className="glass-card rounded-full pl-3.5 pr-1.5 py-1.5 flex items-center gap-2">
+          <button
+            onClick={() => setImageMode((v) => !v)}
+            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${imageMode ? "bg-gradient-primary text-white" : "glass text-muted-foreground"}`}
+            title="Generate image"
+          >
+            <ImageIcon className="w-3 h-3" />
+          </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Ask me anything..."
-            className="flex-1 bg-transparent outline-none text-[11px] placeholder:text-muted-foreground"
+            placeholder={imageMode ? "Describe an image..." : "Ask me anything..."}
+            className="flex-1 bg-transparent outline-none text-[11px] placeholder:text-muted-foreground min-w-0"
           />
+          <button
+            onClick={startListening}
+            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${listening ? "bg-destructive text-white animate-pulse" : "glass text-muted-foreground"}`}
+            title={listening ? "Stop listening" : "Voice input"}
+          >
+            {listening ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
+          </button>
           <button
             onClick={send}
             disabled={loading || !input.trim()}
-            className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white disabled:opacity-50 hover:scale-105 transition-transform"
+            className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white disabled:opacity-50 hover:scale-105 transition-transform shrink-0"
           >
             <Send className="w-3 h-3" />
           </button>
