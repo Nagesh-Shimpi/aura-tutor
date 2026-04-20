@@ -171,7 +171,10 @@ export const ChatScreen = () => {
           }
         }
       }
-      if (assistant) persist({ role: "assistant", content: assistant });
+      if (assistant) {
+        persist({ role: "assistant", content: assistant });
+        if (ttsOn) speakMessage(assistant);
+      }
     } catch {
       toast.error("Network error");
     } finally {
