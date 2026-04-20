@@ -1,1 +1,1 @@
-{"build": {"env": {},"commands": {"install": "npm install","build": "npm run build"},"outputDirectory": "dist"}}}
+{\n  "buildCommand": "npm run build",\n  "outputDirectory": "dist",\n  "installCommand": "npm install",\n  "framework": "vite",\n  "nodeVersion": "20.x"\n}
