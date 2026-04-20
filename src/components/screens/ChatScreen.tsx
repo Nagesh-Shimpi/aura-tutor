@@ -15,7 +15,36 @@ export const ChatScreen = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [ttsOn, setTtsOn] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const speakMessage = (text: string) => {
+    if (!("speechSynthesis" in window)) return toast.error("Speech not supported");
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[*_`#>]/g, ""));
+    u.rate = 1; u.lang = "en-US";
+    window.speechSynthesis.speak(u);
+  };
+
+  const startListening = () => {
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return toast.error("Voice input not supported in this browser");
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const r = new SR();
+    r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 1;
+    r.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " : "") + transcript);
+    };
+    r.onerror = () => { setListening(false); toast.error("Voice input error"); };
+    r.onend = () => setListening(false);
+    recognitionRef.current = r;
+    setListening(true);
+    r.start();
+  };
 
   // Load history
   useEffect(() => {
