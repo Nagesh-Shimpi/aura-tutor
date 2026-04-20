@@ -252,17 +252,31 @@ export const ChatScreen = () => {
 
       <div className="px-3 pb-4 pt-2">
         <div className="glass-card rounded-full pl-3.5 pr-1.5 py-1.5 flex items-center gap-2">
+          <button
+            onClick={() => setImageMode((v) => !v)}
+            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${imageMode ? "bg-gradient-primary text-white" : "glass text-muted-foreground"}`}
+            title="Generate image"
+          >
+            <ImageIcon className="w-3 h-3" />
+          </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Ask me anything..."
-            className="flex-1 bg-transparent outline-none text-[11px] placeholder:text-muted-foreground"
+            placeholder={imageMode ? "Describe an image..." : "Ask me anything..."}
+            className="flex-1 bg-transparent outline-none text-[11px] placeholder:text-muted-foreground min-w-0"
           />
+          <button
+            onClick={startListening}
+            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${listening ? "bg-destructive text-white animate-pulse" : "glass text-muted-foreground"}`}
+            title={listening ? "Stop listening" : "Voice input"}
+          >
+            {listening ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
+          </button>
           <button
             onClick={send}
             disabled={loading || !input.trim()}
-            className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white disabled:opacity-50 hover:scale-105 transition-transform"
+            className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white disabled:opacity-50 hover:scale-105 transition-transform shrink-0"
           >
             <Send className="w-3 h-3" />
           </button>
