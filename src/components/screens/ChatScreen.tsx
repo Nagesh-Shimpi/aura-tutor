@@ -1,11 +1,14 @@
-import { ArrowLeft, Send, Sparkles, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; imageUrl?: string };
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+// Detect image-generation intent in user text
+const IMAGE_TRIGGERS = /\b(generate|create|draw|show|make|render)\b.*\b(image|picture|illustration|diagram|drawing|photo|pic)\b/i;
 
 export const ChatScreen = () => {
   const { user, profile } = useAuth();
