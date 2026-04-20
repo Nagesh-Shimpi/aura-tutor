@@ -1,4 +1,4 @@
-import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, Loader2, Trash2, Mic, MicOff, Volume2, VolumeX, ImageIcon, Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
