@@ -64,6 +64,12 @@ export const ChatScreen = () => {
       } else {
         setMessages([{ role: "assistant", content: `Hey ${profile?.display_name?.split(" ")[0] || "there"}! 👋 What would you like to learn today?` }]);
       }
+      // Consume initial prompt from Home page (if any)
+      const initial = sessionStorage.getItem("ai_tutor_initial_prompt");
+      if (initial) {
+        sessionStorage.removeItem("ai_tutor_initial_prompt");
+        setInput(initial);
+      }
     })();
   }, [user?.id]);
 
