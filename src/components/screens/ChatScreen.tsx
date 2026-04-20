@@ -82,6 +82,31 @@ export const ChatScreen = () => {
     setMessages([{ role: "assistant", content: "Cleared! What's next? ✨" }]);
   };
 
+  const generateImage = async (prompt: string) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        if (resp.status === 429) toast.error("Rate limit hit.");
+        else if (resp.status === 402) toast.error("AI credits exhausted.");
+        else toast.error(data.error || "Image generation failed");
+        return;
+      }
+      const msg: Msg = { role: "assistant", content: `Here's your image: ${prompt}`, imageUrl: data.imageUrl };
+      setMessages((p) => [...p, msg]);
+      if (user) await supabase.from("chat_messages").insert({ user_id: user.id, role: "assistant", content: `[image] ${prompt}` });
+    } catch {
+      toast.error("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -89,8 +114,15 @@ export const ChatScreen = () => {
     const userMsg: Msg = { role: "user", content: text };
     const next = [...messages, userMsg];
     setMessages(next);
-    setLoading(true);
     persist(userMsg);
+
+    if (imageMode || IMAGE_TRIGGERS.test(text)) {
+      setImageMode(false);
+      await generateImage(text);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/chat-tutor`, {
