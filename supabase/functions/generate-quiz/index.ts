@@ -6,12 +6,17 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { topic } = await req.json();
+    const { topic, difficulty, focusMistakes, mistakes } = await req.json();
     if (!topic || typeof topic !== "string") {
       return new Response(JSON.stringify({ error: "topic required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+
+    const level = difficulty || "beginner";
+    const focusBlock = (focusMistakes && Array.isArray(mistakes) && mistakes.length)
+      ? `\n\nThe student previously got these questions wrong — generate NEW questions that test the same underlying concepts (do not copy them verbatim):\n${mistakes.slice(0, 5).map((m: any, i: number) => `${i + 1}. ${m.question} (correct was: ${m.correct_answer})`).join("\n")}`
+      : "";
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -19,8 +24,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You generate engaging educational quizzes for students. Keep questions clear, age-appropriate, and factually accurate." },
-          { role: "user", content: `Generate a 5-question multiple-choice quiz about: ${topic}. Also write a short 2-3 sentence lesson intro.` },
+          { role: "system", content: `You generate engaging educational quizzes for students at ${level} level. Keep questions clear, age-appropriate, factually accurate, and matched to the difficulty: beginner = recall + simple application, intermediate = analysis + multi-step, advanced = synthesis + edge cases.` },
+          { role: "user", content: `Generate a 5-question multiple-choice quiz at ${level} level about: ${topic}. Also write a short 2-3 sentence lesson intro.${focusBlock}` },
         ],
         tools: [{
           type: "function",
