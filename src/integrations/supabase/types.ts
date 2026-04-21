@@ -38,6 +38,54 @@ export type Database = {
         }
         Relationships: []
       }
+      mistakes: {
+        Row: {
+          correct_answer: string | null
+          correct_index: number
+          created_at: string
+          explanation: string | null
+          id: string
+          mastered_at: string | null
+          options: Json
+          question: string
+          times_seen: number
+          topic_id: string | null
+          updated_at: string
+          user_id: string
+          wrong_index: number | null
+        }
+        Insert: {
+          correct_answer?: string | null
+          correct_index: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          mastered_at?: string | null
+          options?: Json
+          question: string
+          times_seen?: number
+          topic_id?: string | null
+          updated_at?: string
+          user_id: string
+          wrong_index?: number | null
+        }
+        Update: {
+          correct_answer?: string | null
+          correct_index?: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          mastered_at?: string | null
+          options?: Json
+          question?: string
+          times_seen?: number
+          topic_id?: string | null
+          updated_at?: string
+          user_id?: string
+          wrong_index?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -147,6 +195,51 @@ export type Database = {
           },
         ]
       }
+      student_memory: {
+        Row: {
+          created_at: string
+          current_difficulty: string
+          id: string
+          last_activity_at: string
+          last_topic_id: string | null
+          mastery: Json
+          preferences: Json
+          total_correct: number
+          total_questions: number
+          total_quizzes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_difficulty?: string
+          id?: string
+          last_activity_at?: string
+          last_topic_id?: string | null
+          mastery?: Json
+          preferences?: Json
+          total_correct?: number
+          total_questions?: number
+          total_quizzes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_difficulty?: string
+          id?: string
+          last_activity_at?: string
+          last_topic_id?: string | null
+          mastery?: Json
+          preferences?: Json
+          total_correct?: number
+          total_questions?: number
+          total_quizzes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       topic_progress: {
         Row: {
           completed: boolean
@@ -221,6 +314,42 @@ export type Database = {
           id?: string
           lesson_content?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      tutor_recommendations: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          cta_label: string | null
+          id: string
+          kind: string
+          message: string
+          priority: number
+          topic_id: string | null
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          cta_label?: string | null
+          id?: string
+          kind: string
+          message: string
+          priority?: number
+          topic_id?: string | null
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          cta_label?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          priority?: number
+          topic_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
