@@ -4,6 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppState } from "@/hooks/useAppState";
 import { toast } from "sonner";
+import { logMistake } from "@/lib/tutor/memoryManager";
+import { DifficultyPill } from "@/components/tutor/DifficultyPill";
+import { useStudent } from "@/hooks/useStudent";
+import { runProactiveAgent } from "@/lib/tutor/proactiveAgent";
 
 type Q = { id: string; question: string; options: string[]; correct_index: number; explanation: string | null };
 type Topic = { id: string; title: string; icon: string };
@@ -11,6 +15,7 @@ type Topic = { id: string; title: string; icon: string };
 export const QuizScreen = () => {
   const { user, refreshProfile, profile } = useAuth();
   const { selectedTopicId, refreshKey, triggerRefresh } = useAppState();
+  const { profile: student, refresh: refreshStudent } = useStudent();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [questions, setQuestions] = useState<Q[]>([]);
   const [idx, setIdx] = useState(0);
@@ -45,7 +50,20 @@ export const QuizScreen = () => {
   const check = () => {
     if (picked === null || !current) return;
     setChecked(true);
-    if (picked === current.correct_index) setScore((s) => s + 1);
+    if (picked === current.correct_index) {
+      setScore((s) => s + 1);
+    } else if (user && topic) {
+      // Log mistake for revision
+      logMistake({
+        topic_id: topic.id,
+        question: current.question,
+        options: current.options,
+        wrong_index: picked,
+        correct_index: current.correct_index,
+        correct_answer: current.options[current.correct_index],
+        explanation: current.explanation,
+      }).catch(() => {});
+    }
   };
 
   const next = async () => {
@@ -74,6 +92,12 @@ export const QuizScreen = () => {
         triggerRefresh();
         setSaving(false);
         toast.success(`+${xp} XP earned! 🎉`);
+        // Adaptive nudge after quiz
+        const pct = (finalScore / questions.length) * 100;
+        if (pct >= 80) toast.success("🚀 Great job! Difficulty just went up.");
+        else if (pct <= 40) toast("📚 Let's revise — I'll suggest easier practice next.", { icon: "💡" });
+        // Refresh recommendations + student memory
+        runProactiveAgent().then(() => refreshStudent());
       }
     }
   };
@@ -116,6 +140,7 @@ export const QuizScreen = () => {
         <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
           <div className="h-full bg-gradient-primary rounded-full transition-all" style={{ width: `${((idx + 1) / questions.length) * 100}%` }} />
         </div>
+        <DifficultyPill level={student?.memory?.current_difficulty} />
         <div className="flex items-center gap-1 glass rounded-full px-2 py-0.5">
           <Flame className="w-3 h-3 text-orange-400" />
           <span className="text-[10px] font-bold">{profile?.streak ?? 0}</span>
