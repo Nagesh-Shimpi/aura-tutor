@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, ArrowRight, Send } from "lucide-react";
+import { Sparkles, ArrowRight, Send, Loader2, ImageIcon, Mic, MicOff, Volume2, Download, User } from "lucide-react";
+import { toast } from "sonner";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const IMAGE_TRIGGERS = /\b(generate|create|draw|show|make|render)\b.*\b(image|picture|illustration|diagram|drawing|photo|pic)\b/i;
+
+type Msg = { role: "user" | "assistant"; content: string; imageUrl?: string };
 
 const SUGGESTIONS = [
   "Explain quantum entanglement simply",
@@ -12,13 +18,118 @@ const SUGGESTIONS = [
 const Home = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const startChat = () => {
-    if (input.trim()) {
-      sessionStorage.setItem("ai_tutor_initial_prompt", input.trim());
-    }
-    navigate("/app");
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, loading]);
+
+  const speak = (text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[*_`#>]/g, ""));
+    u.lang = "en-US";
+    window.speechSynthesis.speak(u);
   };
+
+  const startListening = () => {
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return toast.error("Voice input not supported");
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const r = new SR();
+    r.lang = "en-US"; r.interimResults = false;
+    r.onresult = (e: any) => setInput((p) => (p ? p + " " : "") + e.results[0][0].transcript);
+    r.onerror = () => { setListening(false); toast.error("Voice error"); };
+    r.onend = () => setListening(false);
+    recognitionRef.current = r;
+    setListening(true);
+    r.start();
+  };
+
+  const generateImage = async (prompt: string) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        toast.error(data.error || "Image generation failed");
+        return;
+      }
+      setMessages((p) => [...p, { role: "assistant", content: `Here's your image: ${prompt}`, imageUrl: data.imageUrl }]);
+    } catch {
+      toast.error("Network error");
+    } finally { setLoading(false); }
+  };
+
+  const send = async (overrideText?: string) => {
+    const text = (overrideText ?? input).trim();
+    if (!text || loading) return;
+    setInput("");
+    const userMsg: Msg = { role: "user", content: text };
+    const next = [...messages, userMsg];
+    setMessages(next);
+
+    if (imageMode || IMAGE_TRIGGERS.test(text)) {
+      setImageMode(false);
+      await generateImage(text);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/chat-tutor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next }),
+      });
+      if (!resp.ok || !resp.body) {
+        if (resp.status === 429) toast.error("Rate limit hit. Try again shortly.");
+        else if (resp.status === 402) toast.error("AI credits exhausted.");
+        else toast.error("Something went wrong.");
+        setLoading(false);
+        return;
+      }
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "", assistant = "", done = false;
+      setMessages((p) => [...p, { role: "assistant", content: "" }]);
+      while (!done) {
+        const { done: d, value } = await reader.read();
+        if (d) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, nl);
+          buf = buf.slice(nl + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") { done = true; break; }
+          try {
+            const parsed = JSON.parse(json);
+            const c = parsed.choices?.[0]?.delta?.content;
+            if (c) {
+              assistant += c;
+              setMessages((p) => p.map((m, i) => i === p.length - 1 ? { ...m, content: assistant } : m));
+            }
+          } catch { buf = line + "\n" + buf; break; }
+        }
+      }
+    } catch {
+      toast.error("Network error");
+    } finally { setLoading(false); }
+  };
+
+  const hasChat = messages.length > 0;
 
   return (
     <main className="min-h-screen w-full flex flex-col">
