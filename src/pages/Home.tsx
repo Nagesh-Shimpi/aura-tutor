@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowRight, Send, Loader2, ImageIcon, Mic, MicOff, Volume2, Download, User } from "lucide-react";
 import { toast } from "sonner";
+import { useStudent } from "@/hooks/useStudent";
+import { useAuth } from "@/hooks/useAuth";
+import { TutorBanner } from "@/components/tutor/TutorBanner";
+import { WeakTopicsStrip } from "@/components/tutor/WeakTopicsStrip";
+import { useAppState } from "@/hooks/useAppState";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const IMAGE_TRIGGERS = /\b(generate|create|draw|show|make|render)\b.*\b(image|picture|illustration|diagram|drawing|photo|pic)\b/i;
@@ -17,17 +22,37 @@ const SUGGESTIONS = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user, profile: authProfile } = useAuth();
+  const { profile: student, dismiss, refresh } = useStudent();
+  const { setSelectedTopicId, setActiveScreen } = (() => {
+    try { return useAppState(); } catch { return { setSelectedTopicId: () => {}, setActiveScreen: () => {} } as any; }
+  })();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [imageMode, setImageMode] = useState(false);
   const [listening, setListening] = useState(false);
+  const [greeted, setGreeted] = useState(false);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  // Inject a personalized greeting once when student data lands and chat is empty
+  useEffect(() => {
+    if (!user || greeted || messages.length > 0 || !student) return;
+    const top = student.recommendations[0];
+    const name = authProfile?.display_name?.split(" ")[0] || "there";
+    const greetingText = top
+      ? `👋 Welcome back, ${name}! ${top.message}`
+      : (student.memory?.total_quizzes ?? 0) > 0
+      ? `👋 Hey ${name}! Ready to keep learning? You're at ${student.memory?.current_difficulty} level.`
+      : `👋 Hi ${name}! I'm your AI tutor. Ask me anything, and I'll remember your progress and adapt as we go.`;
+    setMessages([{ role: "assistant", content: greetingText }]);
+    setGreeted(true);
+  }, [student, user, authProfile, messages.length, greeted]);
 
   const speak = (text: string) => {
     if (!("speechSynthesis" in window)) return;
@@ -89,7 +114,17 @@ const Home = () => {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/chat-tutor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({
+          messages: next,
+          studentContext: student ? {
+            displayName: authProfile?.display_name,
+            difficulty: student.memory?.current_difficulty,
+            weakTopics: student.weakTopics.map((w) => w.title),
+            lastTopic: student.lastTopic?.title,
+            totalQuizzes: student.memory?.total_quizzes,
+            recentMistakes: student.mistakes.slice(0, 3).map((m) => m.question),
+          } : undefined,
+        }),
       });
       if (!resp.ok || !resp.body) {
         if (resp.status === 429) toast.error("Rate limit hit. Try again shortly.");
