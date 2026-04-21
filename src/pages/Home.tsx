@@ -186,6 +186,30 @@ const Home = () => {
 
       {/* Hero / Chat */}
       <section className="flex-1 flex flex-col items-center px-4 md:px-6 pt-4 pb-6 max-w-3xl mx-auto w-full">
+        {user && <TutorBanner
+          profile={student}
+          onAction={(rec) => {
+            if (rec.kind === "retry_mistakes") {
+              setActiveScreen?.("quiz");
+              navigate("/app");
+              toast.success("Opening your mistake bank — retry questions in the Quiz screen.");
+            } else if (rec.topic_id) {
+              setSelectedTopicId?.(rec.topic_id);
+              setActiveScreen?.(rec.kind === "revise" ? "topic" : "quiz");
+              navigate("/app");
+            } else if (rec.kind === "level_up") {
+              toast.success("Difficulty bumped! Your next quiz will be harder. 🚀");
+            }
+            dismiss(rec.id);
+            refresh();
+          }}
+          onDismiss={dismiss}
+        />}
+        {user && <WeakTopicsStrip
+          profile={student}
+          onPickTopic={(id) => { setSelectedTopicId?.(id); setActiveScreen?.("topic"); navigate("/app"); }}
+          onRetryMistakes={() => { setActiveScreen?.("quiz"); navigate("/app"); toast.success("Open the Quiz screen to retry your mistakes."); }}
+        />}
         {!hasChat && (
           <div className="text-center pt-8 md:pt-16 pb-8">
             <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 mb-6 animate-fade-in">
