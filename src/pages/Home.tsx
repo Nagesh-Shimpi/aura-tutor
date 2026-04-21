@@ -24,9 +24,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user, profile: authProfile } = useAuth();
   const { profile: student, dismiss, refresh } = useStudent();
-  const { setSelectedTopicId, setActiveScreen } = (() => {
-    try { return useAppState(); } catch { return { setSelectedTopicId: () => {}, setActiveScreen: () => {} } as any; }
-  })();
+  const { setSelectedTopicId } = useAppState();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
@@ -189,14 +187,13 @@ const Home = () => {
         {user && <TutorBanner
           profile={student}
           onAction={(rec) => {
-            if (rec.kind === "retry_mistakes") {
-              setActiveScreen?.("quiz");
+            if (rec.topic_id) {
+              setSelectedTopicId(rec.topic_id);
               navigate("/app");
-              toast.success("Opening your mistake bank — retry questions in the Quiz screen.");
-            } else if (rec.topic_id) {
-              setSelectedTopicId?.(rec.topic_id);
-              setActiveScreen?.(rec.kind === "revise" ? "topic" : "quiz");
+              toast.success(`Opened ${rec.cta_label || "topic"} in the app — head to the Topic or Quiz phone.`);
+            } else if (rec.kind === "retry_mistakes") {
               navigate("/app");
+              toast.success("Open the Quiz phone to retry your saved mistakes.");
             } else if (rec.kind === "level_up") {
               toast.success("Difficulty bumped! Your next quiz will be harder. 🚀");
             }
@@ -207,8 +204,8 @@ const Home = () => {
         />}
         {user && <WeakTopicsStrip
           profile={student}
-          onPickTopic={(id) => { setSelectedTopicId?.(id); setActiveScreen?.("topic"); navigate("/app"); }}
-          onRetryMistakes={() => { setActiveScreen?.("quiz"); navigate("/app"); toast.success("Open the Quiz screen to retry your mistakes."); }}
+          onPickTopic={(id) => { setSelectedTopicId(id); navigate("/app"); toast.success("Topic selected — open Topic or Quiz phone in the app."); }}
+          onRetryMistakes={() => { navigate("/app"); toast.success("Open the Quiz phone to retry your saved mistakes."); }}
         />}
         {!hasChat && (
           <div className="text-center pt-8 md:pt-16 pb-8">
