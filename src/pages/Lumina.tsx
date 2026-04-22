@@ -46,7 +46,12 @@ const SUGGESTIONS: Record<Mode, string[]> = {
   ],
 };
 
+type Panel = null | "account" | "topics" | "quiz" | "progress" | "tutor";
+
 const Lumina = () => {
+  const { user, profile: authProfile, signOut } = useAuth();
+  const { profile: student, dismiss: dismissRec, refresh: refreshStudent } = useStudent();
+  const { setSelectedTopicId } = useAppState();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
@@ -54,6 +59,7 @@ const Lumina = () => {
   const [thinking, setThinking] = useState(false);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
+  const [panel, setPanel] = useState<Panel>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load from localStorage
