@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User } from "lucide-react";
+import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useStudent } from "@/hooks/useStudent";
+import { LoginScreen } from "@/components/screens/LoginScreen";
+import { TopicScreen } from "@/components/screens/TopicScreen";
+import { QuizScreen } from "@/components/screens/QuizScreen";
+import { ProgressScreen } from "@/components/screens/ProgressScreen";
+import { TutorBanner } from "@/components/tutor/TutorBanner";
+import { WeakTopicsStrip } from "@/components/tutor/WeakTopicsStrip";
+import { useAppState } from "@/hooks/useAppState";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const STORAGE_KEY = "lumina_chats_v1";
@@ -36,7 +46,12 @@ const SUGGESTIONS: Record<Mode, string[]> = {
   ],
 };
 
+type Panel = null | "account" | "topics" | "quiz" | "progress" | "tutor";
+
 const Lumina = () => {
+  const { user, profile: authProfile, signOut } = useAuth();
+  const { profile: student, dismiss: dismissRec, refresh: refreshStudent } = useStudent();
+  const { setSelectedTopicId } = useAppState();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
@@ -44,6 +59,7 @@ const Lumina = () => {
   const [thinking, setThinking] = useState(false);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
+  const [panel, setPanel] = useState<Panel>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load from localStorage
@@ -273,6 +289,19 @@ const Lumina = () => {
           </div>
         </div>
 
+        {/* Features */}
+        <div className="px-3 mt-3">
+          <p className="px-1 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1.5">
+            Learn
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <FeatureBtn icon={BookOpen} label="Topics" onClick={() => { setPanel("topics"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={Brain} label="Quiz" onClick={() => { setPanel("quiz"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={BarChart3} label="Progress" onClick={() => { setPanel("progress"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={Sparkles} label="AI Coach" onClick={() => { setPanel("tutor"); setSidebarOpen(false); }} />
+          </div>
+        </div>
+
         {/* History */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-2 pt-3 pb-2 space-y-1">
           <p className="px-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">
@@ -341,6 +370,45 @@ const Lumina = () => {
               ? "Step-by-step teaching, quizzes & doubt detection."
               : "Clean, formatted code answers in fenced blocks."}
           </p>
+
+          {/* Account */}
+          <div className="mt-3 pt-3 border-t border-border/50">
+            {user ? (
+              <div className="glass rounded-2xl p-2.5 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{authProfile?.display_name || user.email?.split("@")[0]}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <span>{authProfile?.xp ?? 0} XP</span>
+                    <Flame className="w-2.5 h-2.5 text-orange-400" />
+                    <span>{authProfile?.streak ?? 0}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={async () => { await signOut(); toast.success("Signed out"); }}
+                  className="w-7 h-7 rounded-lg hover:bg-secondary/60 flex items-center justify-center"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setPanel("account"); setSidebarOpen(false); }}
+                className="w-full glass rounded-2xl p-2.5 flex items-center gap-2 hover:scale-[1.02] transition-transform"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-xs font-semibold">Sign in</p>
+                  <p className="text-[10px] text-muted-foreground">Track XP, streaks & progress</p>
+                </div>
+              </button>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -446,9 +514,82 @@ const Lumina = () => {
           </div>
         </div>
       </main>
+
+      {/* Feature Panels (slide-over) */}
+      <Sheet open={panel !== null} onOpenChange={(o) => !o && setPanel(null)}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-md p-0 overflow-hidden glass border-l border-border/50 [&>button]:z-50"
+        >
+          <div className="h-full flex flex-col bg-background/40">
+            {panel === "account" && <LoginScreen />}
+            {panel === "topics" && <TopicScreen />}
+            {panel === "quiz" && <QuizScreen />}
+            {panel === "progress" && <ProgressScreen />}
+            {panel === "tutor" && (
+              <div className="flex-1 overflow-y-auto p-5 pt-12 space-y-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Personalised for you</p>
+                  <h2 className="text-xl font-display font-bold">AI Coach</h2>
+                </div>
+                {!user ? (
+                  <div className="glass-card rounded-2xl p-4 text-center">
+                    <p className="text-sm font-semibold">Sign in to unlock AI Coach</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Personalised recommendations, weak-area tracking and adaptive difficulty.
+                    </p>
+                    <button
+                      onClick={() => setPanel("account")}
+                      className="mt-3 px-4 py-2 rounded-xl bg-gradient-primary text-white text-xs font-semibold"
+                    >
+                      Sign in
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <TutorBanner
+                      profile={student}
+                      onAction={(rec) => {
+                        if (rec.topic_id) setSelectedTopicId(rec.topic_id);
+                        if (rec.kind === "retry_mistakes" || rec.kind === "level_up" || rec.kind === "revise") {
+                          setPanel("quiz");
+                        } else {
+                          setPanel("topics");
+                        }
+                      }}
+                      onDismiss={dismissRec}
+                    />
+                    <WeakTopicsStrip
+                      profile={student}
+                      onPickTopic={(id) => { setSelectedTopicId(id); setPanel("quiz"); }}
+                      onRetryMistakes={() => setPanel("quiz")}
+                    />
+                    <button
+                      onClick={() => refreshStudent()}
+                      className="w-full glass-card rounded-2xl py-2.5 text-xs font-medium"
+                    >
+                      Refresh recommendations
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
+
+const FeatureBtn = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="glass rounded-xl px-2 py-2 flex items-center gap-1.5 text-xs hover:bg-secondary/60 transition-colors"
+  >
+    <Icon className="w-3.5 h-3.5 text-primary-glow" />
+    <span className="font-medium">{label}</span>
+  </button>
+);
 
 const MessageBubble = ({ msg }: { msg: Msg }) => {
   const isUser = msg.role === "user";
