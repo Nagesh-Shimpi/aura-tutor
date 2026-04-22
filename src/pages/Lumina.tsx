@@ -514,9 +514,82 @@ const Lumina = () => {
           </div>
         </div>
       </main>
+
+      {/* Feature Panels (slide-over) */}
+      <Sheet open={panel !== null} onOpenChange={(o) => !o && setPanel(null)}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-md p-0 overflow-hidden glass border-l border-border/50 [&>button]:z-50"
+        >
+          <div className="h-full flex flex-col bg-background/40">
+            {panel === "account" && <LoginScreen />}
+            {panel === "topics" && <TopicScreen />}
+            {panel === "quiz" && <QuizScreen />}
+            {panel === "progress" && <ProgressScreen />}
+            {panel === "tutor" && (
+              <div className="flex-1 overflow-y-auto p-5 pt-12 space-y-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Personalised for you</p>
+                  <h2 className="text-xl font-display font-bold">AI Coach</h2>
+                </div>
+                {!user ? (
+                  <div className="glass-card rounded-2xl p-4 text-center">
+                    <p className="text-sm font-semibold">Sign in to unlock AI Coach</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Personalised recommendations, weak-area tracking and adaptive difficulty.
+                    </p>
+                    <button
+                      onClick={() => setPanel("account")}
+                      className="mt-3 px-4 py-2 rounded-xl bg-gradient-primary text-white text-xs font-semibold"
+                    >
+                      Sign in
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <TutorBanner
+                      profile={student}
+                      onAction={(rec) => {
+                        if (rec.topic_id) setSelectedTopicId(rec.topic_id);
+                        if (rec.kind === "retry_mistakes" || rec.kind === "level_up" || rec.kind === "revise") {
+                          setPanel("quiz");
+                        } else {
+                          setPanel("topics");
+                        }
+                      }}
+                      onDismiss={dismissRec}
+                    />
+                    <WeakTopicsStrip
+                      profile={student}
+                      onPickTopic={(id) => { setSelectedTopicId(id); setPanel("quiz"); }}
+                      onRetryMistakes={() => setPanel("quiz")}
+                    />
+                    <button
+                      onClick={() => refreshStudent()}
+                      className="w-full glass-card rounded-2xl py-2.5 text-xs font-medium"
+                    >
+                      Refresh recommendations
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
+
+const FeatureBtn = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="glass rounded-xl px-2 py-2 flex items-center gap-1.5 text-xs hover:bg-secondary/60 transition-colors"
+  >
+    <Icon className="w-3.5 h-3.5 text-primary-glow" />
+    <span className="font-medium">{label}</span>
+  </button>
+);
 
 const MessageBubble = ({ msg }: { msg: Msg }) => {
   const isUser = msg.role === "user";
