@@ -289,6 +289,19 @@ const Lumina = () => {
           </div>
         </div>
 
+        {/* Features */}
+        <div className="px-3 mt-3">
+          <p className="px-1 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1.5">
+            Learn
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <FeatureBtn icon={BookOpen} label="Topics" onClick={() => { setPanel("topics"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={Brain} label="Quiz" onClick={() => { setPanel("quiz"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={BarChart3} label="Progress" onClick={() => { setPanel("progress"); setSidebarOpen(false); }} />
+            <FeatureBtn icon={Sparkles} label="AI Coach" onClick={() => { setPanel("tutor"); setSidebarOpen(false); }} />
+          </div>
+        </div>
+
         {/* History */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-2 pt-3 pb-2 space-y-1">
           <p className="px-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">
