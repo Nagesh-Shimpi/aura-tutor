@@ -370,6 +370,45 @@ const Lumina = () => {
               ? "Step-by-step teaching, quizzes & doubt detection."
               : "Clean, formatted code answers in fenced blocks."}
           </p>
+
+          {/* Account */}
+          <div className="mt-3 pt-3 border-t border-border/50">
+            {user ? (
+              <div className="glass rounded-2xl p-2.5 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{authProfile?.display_name || user.email?.split("@")[0]}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <span>{authProfile?.xp ?? 0} XP</span>
+                    <Flame className="w-2.5 h-2.5 text-orange-400" />
+                    <span>{authProfile?.streak ?? 0}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={async () => { await signOut(); toast.success("Signed out"); }}
+                  className="w-7 h-7 rounded-lg hover:bg-secondary/60 flex items-center justify-center"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setPanel("account"); setSidebarOpen(false); }}
+                className="w-full glass rounded-2xl p-2.5 flex items-center gap-2 hover:scale-[1.02] transition-transform"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-xs font-semibold">Sign in</p>
+                  <p className="text-[10px] text-muted-foreground">Track XP, streaks & progress</p>
+                </div>
+              </button>
+            )}
+          </div>
         </div>
       </aside>
 
