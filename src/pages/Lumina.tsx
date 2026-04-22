@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User } from "lucide-react";
+import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useStudent } from "@/hooks/useStudent";
+import { LoginScreen } from "@/components/screens/LoginScreen";
+import { TopicScreen } from "@/components/screens/TopicScreen";
+import { QuizScreen } from "@/components/screens/QuizScreen";
+import { ProgressScreen } from "@/components/screens/ProgressScreen";
+import { TutorBanner } from "@/components/tutor/TutorBanner";
+import { WeakTopicsStrip } from "@/components/tutor/WeakTopicsStrip";
+import { useAppState } from "@/hooks/useAppState";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const STORAGE_KEY = "lumina_chats_v1";
