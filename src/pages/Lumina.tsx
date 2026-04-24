@@ -590,15 +590,28 @@ const Lumina = () => {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col min-w-0 relative bg-white text-slate-900 overflow-hidden">
-        {/* Floating color blobs (matches home hero) */}
+      <main className="flex-1 flex flex-col min-w-0 relative text-slate-900 overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f0fdf4_35%,#fdf2f8_70%,#ffffff_100%)]">
+        {/* Nature-inspired ambient backdrop: soft greens, blossom pinks, cream highlights */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-300/50 blur-3xl animate-blob" />
-          <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-sky-300/50 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
-          <div className="absolute top-1/3 left-1/2 w-72 h-72 rounded-full bg-fuchsia-300/40 blur-3xl animate-blob" style={{ animationDelay: "1.5s" }} />
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-amber-200/60 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
-          <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-200/60 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
-          <div className="absolute top-1/2 -right-10 w-60 h-60 rounded-full bg-rose-300/50 blur-3xl animate-blob" style={{ animationDelay: "4.5s" }} />
+          {/* leafy greens */}
+          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-emerald-300/55 blur-3xl animate-blob" />
+          <div className="absolute bottom-0 -left-10 w-96 h-96 rounded-full bg-green-300/45 blur-3xl animate-blob" style={{ animationDelay: "5s" }} />
+          <div className="absolute top-1/2 left-1/3 w-72 h-72 rounded-full bg-lime-200/55 blur-3xl animate-blob" style={{ animationDelay: "8s" }} />
+          {/* blossom pinks */}
+          <div className="absolute top-8 right-0 w-80 h-80 rounded-full bg-pink-300/55 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+          <div className="absolute bottom-10 right-10 w-72 h-72 rounded-full bg-rose-300/50 blur-3xl animate-blob" style={{ animationDelay: "6.5s" }} />
+          <div className="absolute top-1/3 right-1/4 w-56 h-56 rounded-full bg-fuchsia-200/50 blur-3xl animate-blob" style={{ animationDelay: "1.5s" }} />
+          {/* cream warmth */}
+          <div className="absolute bottom-1/3 left-1/2 w-64 h-64 rounded-full bg-amber-100/70 blur-3xl animate-blob" style={{ animationDelay: "4s" }} />
+          {/* subtle organic dot texture */}
+          <div
+            className="absolute inset-0 opacity-[0.07] mix-blend-multiply"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 20%, #16a34a 0.6px, transparent 1.6px), radial-gradient(circle at 70% 60%, #db2777 0.6px, transparent 1.6px)",
+              backgroundSize: "28px 28px, 36px 36px",
+            }}
+          />
         </div>
 
         {/* Header */}
