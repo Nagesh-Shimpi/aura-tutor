@@ -134,13 +134,13 @@ export const TopicScreen = () => {
         ) : (
           <button onClick={() => setShowGen(true)} className="w-full glass-card rounded-2xl p-2.5 mb-3 flex items-center gap-2 text-left">
             <Sparkles className="w-3.5 h-3.5 text-primary-glow" />
-            <span className="text-[10px] font-semibold flex-1">Generate a new topic with AI</span>
+            <span className="font-semibold flex-1 text-sm">Generate a new topic with AI</span>
             <span className="text-[10px] text-primary-glow">+</span>
           </button>
         )}
 
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] text-muted-foreground">{topic.description}</p>
+          <p className="text-muted-foreground text-sm">{topic.description}</p>
           <button onClick={startLearning} className="ml-2 w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center shadow-[0_10px_30px_-8px_hsl(258_90%_66%/0.6)] flex-shrink-0">
             <Play className="w-4 h-4 text-white fill-white ml-0.5" />
           </button>
@@ -151,7 +151,7 @@ export const TopicScreen = () => {
             <BookOpen className="w-3 h-3 text-primary-glow" />
             <p className="text-[10px] font-display font-semibold">Lesson</p>
           </div>
-          <p className="text-[10px] text-muted-foreground leading-relaxed whitespace-pre-line">{topic.lesson_content || "No lesson content yet."}</p>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-sm">{topic.lesson_content || "No lesson content yet."}</p>
         </div>
 
         <p className="text-[10px] font-display font-semibold mb-2">All Topics</p>
@@ -160,12 +160,12 @@ export const TopicScreen = () => {
             <button
               key={t.id}
               onClick={() => setSelectedTopicId(t.id)}
-              className={`w-full glass-card rounded-xl p-2 flex items-center gap-2 text-left ${t.id === topic.id ? "ring-1 ring-primary/50" : ""}`}
+              className={`w-full glass-card rounded-xl p-2 flex items-center gap-2 text-left ${t.id === topic.id ? "ring-1 ring-primary/50 text-9xl text-destructive" : ""}`}
             >
               <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${t.color} flex items-center justify-center text-xs flex-shrink-0`}>{t.icon}</div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold truncate">{t.title}</p>
-                <p className="text-[9px] text-muted-foreground truncate">{t.category}</p>
+                <p className="font-semibold truncate text-base">{t.title}</p>
+                <p className="text-muted-foreground truncate text-sm">{t.category}</p>
               </div>
               {t.id === topic.id && <span className="text-[8px] font-bold text-primary-glow bg-primary/10 px-1.5 py-0.5 rounded-full">NOW</span>}
             </button>
