@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame, Zap, PlayCircle, ArrowRight, Trophy, History } from "lucide-react";
+import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame, Zap, PlayCircle, ArrowRight, ArrowLeft, Trophy, History } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
