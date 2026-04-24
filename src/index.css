@@ -138,6 +138,57 @@
   .animate-typing { animation: typing 1.4s infinite ease-in-out; }
 }
 
+/* ============================================================
+   Light/pink themed override for slide-over panels
+   Re-skins existing dark screens (Topics/Quiz/Progress/Login)
+   without touching their markup.
+   ============================================================ */
+.panel-themed {
+  color: rgb(15 23 42); /* slate-900 */
+}
+.panel-themed .glass,
+.panel-themed .glass-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 114, 182, 0.25) !important; /* pink-400/25 */
+  box-shadow: 0 8px 24px -12px rgba(168, 85, 247, 0.25);
+  color: rgb(15 23 42);
+}
+.panel-themed .text-muted-foreground { color: rgb(100 116 139) !important; } /* slate-500 */
+.panel-themed .text-foreground { color: rgb(15 23 42) !important; }
+.panel-themed .bg-secondary,
+.panel-themed .bg-secondary\/50,
+.panel-themed .bg-secondary\/60,
+.panel-themed .bg-secondary\/80 {
+  background-color: rgba(252, 231, 243, 0.7) !important; /* pink-100/70 */
+  color: rgb(15 23 42) !important;
+}
+.panel-themed .border-border,
+.panel-themed .border-border\/50,
+.panel-themed .border-border\/60 {
+  border-color: rgba(244, 114, 182, 0.3) !important;
+}
+.panel-themed input,
+.panel-themed textarea {
+  color: rgb(15 23 42);
+}
+.panel-themed input::placeholder,
+.panel-themed textarea::placeholder {
+  color: rgb(148 163 184); /* slate-400 */
+}
+.panel-themed .gradient-text {
+  background: linear-gradient(135deg, hsl(330 85% 55%), hsl(280 85% 60%), hsl(220 90% 60%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+/* Make the primary gradient buttons inside panels use pink→violet */
+.panel-themed .bg-gradient-primary {
+  background: linear-gradient(135deg, hsl(330 85% 60%), hsl(280 85% 60%)) !important;
+}
+
 @keyframes blob {
   0%, 100% { transform: translate(0,0) scale(1); }
   33% { transform: translate(30px,-30px) scale(1.1); }
