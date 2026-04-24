@@ -611,34 +611,10 @@ const Lumina = () => {
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-6">
-            {active.messages.length === 0 ? (
-              <div className="text-center pt-10 md:pt-20 animate-fade-in">
-                <div className="w-16 h-16 rounded-3xl bg-gradient-primary mx-auto flex items-center justify-center shadow-[0_20px_60px_-20px_hsl(258_90%_66%/0.6)] mb-5">
-                  <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-display font-bold">
-                  How can I help you{" "}
-                  <span className="gradient-text">{active.mode === "code" ? "ship code" : "learn"}</span>?
-                </h2>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {active.mode === "code"
-                    ? "Ask for a snippet, a fix, or a refactor."
-                    : "Pick a topic, ask a doubt, or take a quick quiz."}
-                </p>
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
-                  {SUGGESTIONS[active.mode].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => send(s)}
-                      className="glass-card rounded-2xl px-4 py-3 text-left text-sm hover:scale-[1.02] transition-transform"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
+          {active.messages.length === 0 ? (
+            <HomeHero mode={active.mode} onPick={(s) => send(s)} userName={authProfile?.display_name || user?.email?.split("@")[0]} />
+          ) : (
+            <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-6">
               <div className="space-y-5">
                 {active.messages.map((m, i) => (
                   <MessageBubble key={i} msg={m} />
@@ -655,8 +631,8 @@ const Lumina = () => {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Composer */}
