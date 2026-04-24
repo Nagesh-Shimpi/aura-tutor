@@ -390,7 +390,7 @@ const Lumina = () => {
         <div className="px-3">
           <button
             onClick={handleNewChat}
-            className="w-full rounded-2xl bg-gradient-primary text-white text-sm font-semibold px-3.5 py-2.5 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-[0_10px_30px_-10px_hsl(258_90%_66%/0.6)]"
+            className="w-full rounded-2xl bg-gradient-primary text-white font-semibold px-3.5 py-2.5 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-[0_10px_30px_-10px_hsl(258_90%_66%/0.6)] text-base bg-destructive border-muted-foreground"
           >
             <Plus className="w-4 h-4" /> New chat
           </button>
