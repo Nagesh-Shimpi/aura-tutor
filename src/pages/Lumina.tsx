@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame } from "lucide-react";
+import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame, Zap, PlayCircle, ArrowRight, Trophy, History } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useStudent } from "@/hooks/useStudent";
+import { supabase } from "@/integrations/supabase/client";
 import { LoginScreen } from "@/components/screens/LoginScreen";
 import { TopicScreen } from "@/components/screens/TopicScreen";
 import { QuizScreen } from "@/components/screens/QuizScreen";
@@ -51,7 +52,7 @@ type Panel = null | "account" | "topics" | "quiz" | "progress" | "tutor";
 const Lumina = () => {
   const { user, profile: authProfile, signOut } = useAuth();
   const { profile: student, dismiss: dismissRec, refresh: refreshStudent } = useStudent();
-  const { setSelectedTopicId } = useAppState();
+  const { setSelectedTopicId, refreshKey } = useAppState();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
@@ -60,6 +61,7 @@ const Lumina = () => {
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
   const [panel, setPanel] = useState<Panel>(null);
+  const [recentAttempts, setRecentAttempts] = useState<Array<{ id: string; score: number; total: number; xp_earned: number; created_at: string; topic: { title: string; icon: string } | null }>>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load from localStorage
@@ -90,6 +92,124 @@ const Lumina = () => {
   useEffect(() => {
     if (activeId) localStorage.setItem(ACTIVE_KEY, activeId);
   }, [activeId]);
+
+  // Live quiz results
+  useEffect(() => {
+    if (!user) { setRecentAttempts([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("quiz_attempts")
+        .select("id, score, total, xp_earned, created_at, topic_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (!data || cancelled) return;
+      const topicIds = Array.from(new Set(data.map((d) => d.topic_id))).filter(Boolean);
+      const { data: topics } = await supabase
+        .from("topics")
+        .select("id, title, icon")
+        .in("id", topicIds.length ? topicIds : ["00000000-0000-0000-0000-000000000000"]);
+      const map = new Map((topics || []).map((t: any) => [t.id, { title: t.title, icon: t.icon }]));
+      if (cancelled) return;
+      setRecentAttempts(
+        data.map((d: any) => ({
+          id: d.id,
+          score: d.score,
+          total: d.total,
+          xp_earned: d.xp_earned,
+          created_at: d.created_at,
+          topic: map.get(d.topic_id) || null,
+        }))
+      );
+    })();
+    // realtime updates
+    const channel = supabase
+      .channel(`quiz_attempts_${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "quiz_attempts", filter: `user_id=eq.${user.id}` },
+        () => {
+          // refetch on new attempt
+          supabase
+            .from("quiz_attempts")
+            .select("id, score, total, xp_earned, created_at, topic_id")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(5)
+            .then(async ({ data }) => {
+              if (!data) return;
+              const topicIds = Array.from(new Set(data.map((d) => d.topic_id))).filter(Boolean);
+              const { data: topics } = await supabase
+                .from("topics")
+                .select("id, title, icon")
+                .in("id", topicIds.length ? topicIds : ["00000000-0000-0000-0000-000000000000"]);
+              const map = new Map((topics || []).map((t: any) => [t.id, { title: t.title, icon: t.icon }]));
+              setRecentAttempts(
+                data.map((d: any) => ({
+                  id: d.id,
+                  score: d.score,
+                  total: d.total,
+                  xp_earned: d.xp_earned,
+                  created_at: d.created_at,
+                  topic: map.get(d.topic_id) || null,
+                }))
+              );
+            });
+        }
+      )
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [user, refreshKey]);
+
+  // Quick actions
+  const topRec = student?.recommendations?.[0];
+  const lastTopicId = student?.memory?.last_topic_id || topRec?.topic_id || null;
+
+  const quickActions = useMemo(() => {
+    const actions: Array<{ key: string; label: string; sub: string; icon: any; onClick: () => void; accent: string }> = [];
+    if (topRec) {
+      actions.push({
+        key: "next",
+        label: "Next topic",
+        sub: topRec.message.slice(0, 38) + (topRec.message.length > 38 ? "…" : ""),
+        icon: ArrowRight,
+        accent: "from-primary to-primary-glow",
+        onClick: () => {
+          if (topRec.topic_id) setSelectedTopicId(topRec.topic_id);
+          setPanel(topRec.kind === "retry_mistakes" || topRec.kind === "level_up" || topRec.kind === "revise" ? "quiz" : "topics");
+          setSidebarOpen(false);
+        },
+      });
+    }
+    actions.push({
+      key: "quiz",
+      label: "Start quiz",
+      sub: lastTopicId ? "Continue your last topic" : "Pick a topic to begin",
+      icon: PlayCircle,
+      accent: "from-accent to-primary-glow",
+      onClick: () => {
+        if (lastTopicId) setSelectedTopicId(lastTopicId);
+        setPanel("quiz");
+        setSidebarOpen(false);
+      },
+    });
+    if (recentAttempts[0]) {
+      const last = recentAttempts[0];
+      actions.push({
+        key: "resume",
+        label: "Resume session",
+        sub: last.topic ? `${last.topic.icon} ${last.topic.title}` : "Last activity",
+        icon: History,
+        accent: "from-primary-glow to-accent",
+        onClick: () => {
+          setPanel("progress");
+          setSidebarOpen(false);
+        },
+      });
+    }
+    return actions;
+  }, [topRec, lastTopicId, recentAttempts, setSelectedTopicId]);
 
   const active = useMemo(() => chats.find((c) => c.id === activeId) || null, [chats, activeId]);
 
@@ -302,6 +422,63 @@ const Lumina = () => {
           </div>
         </div>
 
+        {/* Quick actions */}
+        {user && quickActions.length > 0 && (
+          <div className="px-3 mt-3">
+            <p className="px-1 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1.5 flex items-center gap-1">
+              <Zap className="w-3 h-3 text-accent" /> Quick actions
+            </p>
+            <div className="space-y-1.5">
+              {quickActions.map((a) => (
+                <button
+                  key={a.key}
+                  onClick={a.onClick}
+                  className="w-full glass-card rounded-xl px-2.5 py-2 flex items-center gap-2 hover:scale-[1.02] transition-transform text-left"
+                >
+                  <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${a.accent} flex items-center justify-center shrink-0`}>
+                    <a.icon className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold leading-tight">{a.label}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{a.sub}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Live quiz results */}
+        {user && recentAttempts.length > 0 && (
+          <div className="px-3 mt-3">
+            <p className="px-1 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1.5 flex items-center gap-1">
+              <Trophy className="w-3 h-3 text-orange-400" /> Live results
+              <span className="ml-auto inline-flex items-center gap-1 text-[9px] text-emerald-400 font-medium normal-case tracking-normal">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> live
+              </span>
+            </p>
+            <div className="space-y-1">
+              {recentAttempts.slice(0, 3).map((a) => {
+                const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+                const tone = pct >= 80 ? "text-emerald-400" : pct >= 50 ? "text-primary-glow" : "text-orange-400";
+                return (
+                  <div key={a.id} className="glass rounded-xl px-2.5 py-1.5 flex items-center gap-2">
+                    <span className="text-sm shrink-0">{a.topic?.icon || "📘"}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-medium truncate">{a.topic?.title || "Quiz"}</p>
+                      <p className="text-[9px] text-muted-foreground">+{a.xp_earned} XP</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-[11px] font-bold ${tone}`}>{a.score}/{a.total}</p>
+                      <p className="text-[9px] text-muted-foreground">{pct}%</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* History */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-2 pt-3 pb-2 space-y-1">
           <p className="px-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">
@@ -434,34 +611,10 @@ const Lumina = () => {
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-6">
-            {active.messages.length === 0 ? (
-              <div className="text-center pt-10 md:pt-20 animate-fade-in">
-                <div className="w-16 h-16 rounded-3xl bg-gradient-primary mx-auto flex items-center justify-center shadow-[0_20px_60px_-20px_hsl(258_90%_66%/0.6)] mb-5">
-                  <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-display font-bold">
-                  How can I help you{" "}
-                  <span className="gradient-text">{active.mode === "code" ? "ship code" : "learn"}</span>?
-                </h2>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {active.mode === "code"
-                    ? "Ask for a snippet, a fix, or a refactor."
-                    : "Pick a topic, ask a doubt, or take a quick quiz."}
-                </p>
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
-                  {SUGGESTIONS[active.mode].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => send(s)}
-                      className="glass-card rounded-2xl px-4 py-3 text-left text-sm hover:scale-[1.02] transition-transform"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
+          {active.messages.length === 0 ? (
+            <HomeHero mode={active.mode} onPick={(s) => send(s)} userName={authProfile?.display_name || user?.email?.split("@")[0]} />
+          ) : (
+            <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-6">
               <div className="space-y-5">
                 {active.messages.map((m, i) => (
                   <MessageBubble key={i} msg={m} />
@@ -478,8 +631,8 @@ const Lumina = () => {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Composer */}
@@ -590,6 +743,90 @@ const FeatureBtn = ({ icon: Icon, label, onClick }: { icon: any; label: string; 
     <span className="font-medium">{label}</span>
   </button>
 );
+
+const HomeHero = ({ mode, onPick, userName }: { mode: Mode; onPick: (s: string) => void; userName?: string }) => {
+  const accents = [
+    { bg: "from-violet-500 to-fuchsia-500", icon: "✨" },
+    { bg: "from-sky-500 to-cyan-400", icon: "🧠" },
+    { bg: "from-amber-400 to-orange-500", icon: "🚀" },
+    { bg: "from-emerald-400 to-teal-500", icon: "💡" },
+  ];
+  return (
+    <div className="relative min-h-full bg-white text-slate-900 overflow-hidden">
+      {/* Interactive color blobs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-300/60 blur-3xl animate-blob" />
+        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-sky-300/60 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-amber-200/70 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
+        <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-200/70 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
+      </div>
+
+      <div className="relative max-w-3xl mx-auto w-full px-4 md:px-8 py-10 md:py-16">
+        <div className="text-center animate-fade-in">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-slate-200 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+              {mode === "code" ? "Code mode" : "Tutor mode"}
+            </span>
+          </div>
+          <h2 className="mt-5 text-4xl md:text-5xl font-display font-bold leading-[1.05] text-slate-900">
+            {userName ? `Hi ${userName}, ` : "Hello, "}
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-clip-text text-transparent">
+              {mode === "code" ? "let's ship something" : "ready to learn?"}
+            </span>
+          </h2>
+          <p className="text-sm md:text-base text-slate-500 mt-3 max-w-md mx-auto">
+            {mode === "code"
+              ? "Ask for a snippet, a fix, or a refactor — clean, formatted code in seconds."
+              : "Pick a topic, ask a doubt, or jump into a quick quiz. I adapt to your pace."}
+          </p>
+        </div>
+
+        {/* Interactive suggestion cards */}
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {SUGGESTIONS[mode].map((s, i) => {
+            const a = accents[i % accents.length];
+            return (
+              <button
+                key={s}
+                onClick={() => onPick(s)}
+                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-4 text-left shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full bg-gradient-to-br ${a.bg} opacity-20 group-hover:opacity-40 transition-opacity blur-xl`} />
+                <div className="relative flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${a.bg} flex items-center justify-center text-base shadow-md shrink-0`}>
+                    {a.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 leading-snug">{s}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                      Try this <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Color chips row */}
+        <div className="mt-8 flex flex-wrap gap-2 justify-center">
+          {[
+            { label: "Step-by-step", c: "bg-violet-100 text-violet-700 border-violet-200" },
+            { label: "Adaptive", c: "bg-sky-100 text-sky-700 border-sky-200" },
+            { label: "Quizzes", c: "bg-amber-100 text-amber-700 border-amber-200" },
+            { label: "Doubt detection", c: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+            { label: "Memory", c: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200" },
+          ].map((chip) => (
+            <span key={chip.label} className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${chip.c}`}>
+              {chip.label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MessageBubble = ({ msg }: { msg: Msg }) => {
   const isUser = msg.role === "user";
