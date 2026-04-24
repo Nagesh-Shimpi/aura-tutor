@@ -877,8 +877,10 @@ const MessageBubble = ({ msg }: { msg: Msg }) => {
   return (
     <div className={`flex gap-3 animate-fade-in ${isUser ? "flex-row-reverse" : ""}`}>
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-          isUser ? "glass" : "bg-gradient-primary"
+        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md ${
+          isUser
+            ? "bg-gradient-to-br from-sky-400 to-cyan-500 text-white"
+            : "bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 shadow-fuchsia-300/50"
         }`}
       >
         {isUser ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4 text-white" />}
@@ -886,8 +888,8 @@ const MessageBubble = ({ msg }: { msg: Msg }) => {
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isUser
-            ? "bg-gradient-primary text-white rounded-br-md shadow-md whitespace-pre-wrap"
-            : "glass-card rounded-bl-md"
+            ? "bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 text-white rounded-br-md shadow-lg shadow-fuchsia-300/40 whitespace-pre-wrap"
+            : "bg-white/85 backdrop-blur-md border border-pink-100 rounded-bl-md shadow-sm text-slate-800"
         }`}
       >
         {isUser ? (
@@ -897,7 +899,7 @@ const MessageBubble = ({ msg }: { msg: Msg }) => {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
           </div>
         ) : (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500" />
         )}
       </div>
     </div>
