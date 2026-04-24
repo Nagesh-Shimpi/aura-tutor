@@ -777,19 +777,21 @@ const FeatureBtn = ({ icon: Icon, label, onClick }: { icon: any; label: string; 
 
 const HomeHero = ({ mode, onPick, userName }: { mode: Mode; onPick: (s: string) => void; userName?: string }) => {
   const accents = [
-    { bg: "from-violet-500 to-fuchsia-500", icon: "✨" },
-    { bg: "from-sky-500 to-cyan-400", icon: "🧠" },
-    { bg: "from-amber-400 to-orange-500", icon: "🚀" },
-    { bg: "from-emerald-400 to-teal-500", icon: "💡" },
+    { bg: "from-violet-500 via-fuchsia-500 to-pink-500", icon: "✨", ring: "hover:ring-violet-300", glow: "group-hover:shadow-violet-300/60" },
+    { bg: "from-sky-500 via-cyan-400 to-teal-400", icon: "🧠", ring: "hover:ring-sky-300", glow: "group-hover:shadow-sky-300/60" },
+    { bg: "from-amber-400 via-orange-500 to-rose-500", icon: "🚀", ring: "hover:ring-amber-300", glow: "group-hover:shadow-amber-300/60" },
+    { bg: "from-emerald-400 via-lime-400 to-yellow-400", icon: "💡", ring: "hover:ring-emerald-300", glow: "group-hover:shadow-emerald-300/60" },
   ];
   return (
     <div className="relative min-h-full bg-white text-slate-900 overflow-hidden">
-      {/* Interactive color blobs */}
+      {/* Interactive color blobs — vibrant & layered */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-300/60 blur-3xl animate-blob" />
-        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-sky-300/60 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-amber-200/70 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
-        <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-200/70 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
+        <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-400/70 blur-3xl animate-blob" />
+        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-sky-400/60 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+        <div className="absolute top-1/3 left-1/2 w-72 h-72 rounded-full bg-fuchsia-300/60 blur-3xl animate-blob" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-amber-300/70 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
+        <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-300/70 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
+        <div className="absolute top-1/2 -right-10 w-60 h-60 rounded-full bg-rose-300/60 blur-3xl animate-blob" style={{ animationDelay: "4.5s" }} />
       </div>
 
       <div className="relative max-w-3xl mx-auto w-full px-4 md:px-8 py-10 md:py-16">
@@ -821,17 +823,18 @@ const HomeHero = ({ mode, onPick, userName }: { mode: Mode; onPick: (s: string) 
               <button
                 key={s}
                 onClick={() => onPick(s)}
-                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-4 text-left shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className={`group relative overflow-hidden rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4 text-left shadow-sm hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.015] hover:ring-2 ${a.ring} transition-all duration-300 ${a.glow}`}
               >
-                <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full bg-gradient-to-br ${a.bg} opacity-20 group-hover:opacity-40 transition-opacity blur-xl`} />
+                <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full bg-gradient-to-br ${a.bg} opacity-25 group-hover:opacity-60 group-hover:scale-125 transition-all duration-500 blur-2xl`} />
+                <div className={`absolute -left-6 -bottom-6 w-20 h-20 rounded-full bg-gradient-to-tr ${a.bg} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-2xl`} />
                 <div className="relative flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${a.bg} flex items-center justify-center text-base shadow-md shrink-0`}>
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${a.bg} flex items-center justify-center text-lg shadow-lg shrink-0 group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300`}>
                     {a.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-900 leading-snug">{s}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                      Try this <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 group-hover:text-slate-700 transition-colors">
+                      Try this <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </p>
                   </div>
                 </div>
