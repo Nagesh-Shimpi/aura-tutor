@@ -744,6 +744,90 @@ const FeatureBtn = ({ icon: Icon, label, onClick }: { icon: any; label: string; 
   </button>
 );
 
+const HomeHero = ({ mode, onPick, userName }: { mode: Mode; onPick: (s: string) => void; userName?: string }) => {
+  const accents = [
+    { bg: "from-violet-500 to-fuchsia-500", icon: "✨" },
+    { bg: "from-sky-500 to-cyan-400", icon: "🧠" },
+    { bg: "from-amber-400 to-orange-500", icon: "🚀" },
+    { bg: "from-emerald-400 to-teal-500", icon: "💡" },
+  ];
+  return (
+    <div className="relative min-h-full bg-white text-slate-900 overflow-hidden">
+      {/* Interactive color blobs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-300/60 blur-3xl animate-blob" />
+        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-sky-300/60 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-amber-200/70 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
+        <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-200/70 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
+      </div>
+
+      <div className="relative max-w-3xl mx-auto w-full px-4 md:px-8 py-10 md:py-16">
+        <div className="text-center animate-fade-in">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-slate-200 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+              {mode === "code" ? "Code mode" : "Tutor mode"}
+            </span>
+          </div>
+          <h2 className="mt-5 text-4xl md:text-5xl font-display font-bold leading-[1.05] text-slate-900">
+            {userName ? `Hi ${userName}, ` : "Hello, "}
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-clip-text text-transparent">
+              {mode === "code" ? "let's ship something" : "ready to learn?"}
+            </span>
+          </h2>
+          <p className="text-sm md:text-base text-slate-500 mt-3 max-w-md mx-auto">
+            {mode === "code"
+              ? "Ask for a snippet, a fix, or a refactor — clean, formatted code in seconds."
+              : "Pick a topic, ask a doubt, or jump into a quick quiz. I adapt to your pace."}
+          </p>
+        </div>
+
+        {/* Interactive suggestion cards */}
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {SUGGESTIONS[mode].map((s, i) => {
+            const a = accents[i % accents.length];
+            return (
+              <button
+                key={s}
+                onClick={() => onPick(s)}
+                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-4 text-left shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full bg-gradient-to-br ${a.bg} opacity-20 group-hover:opacity-40 transition-opacity blur-xl`} />
+                <div className="relative flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${a.bg} flex items-center justify-center text-base shadow-md shrink-0`}>
+                    {a.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 leading-snug">{s}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                      Try this <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Color chips row */}
+        <div className="mt-8 flex flex-wrap gap-2 justify-center">
+          {[
+            { label: "Step-by-step", c: "bg-violet-100 text-violet-700 border-violet-200" },
+            { label: "Adaptive", c: "bg-sky-100 text-sky-700 border-sky-200" },
+            { label: "Quizzes", c: "bg-amber-100 text-amber-700 border-amber-200" },
+            { label: "Doubt detection", c: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+            { label: "Memory", c: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200" },
+          ].map((chip) => (
+            <span key={chip.label} className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${chip.c}`}>
+              {chip.label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MessageBubble = ({ msg }: { msg: Msg }) => {
   const isUser = msg.role === "user";
   return (
