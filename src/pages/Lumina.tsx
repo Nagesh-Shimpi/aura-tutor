@@ -704,6 +704,28 @@ const Lumina = () => {
 
         {/* Messages */}
         <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto scrollbar-hide">
+          {/* Mobile panel shortcuts (chips) */}
+          <div className="md:hidden sticky top-0 z-20 px-3 py-2 flex gap-1.5 overflow-x-auto scrollbar-hide nt-surface backdrop-blur border-b">
+            {[
+              { icon: BookOpen,  label: "Topics",   onClick: () => setPanel("topics") },
+              { icon: Brain,     label: "Quiz",     onClick: () => setPanel("quiz") },
+              { icon: BarChart3, label: "Progress", onClick: () => setPanel("progress") },
+              { icon: Sparkles,  label: "AI Coach", onClick: () => setPanel("tutor") },
+              { icon: User,      label: user ? "Account" : "Sign in", onClick: () => setPanel("account") },
+            ].map((s) => {
+              const Icon = s.icon;
+              return (
+                <button
+                  key={s.label}
+                  onClick={s.onClick}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border nt-surface shadow-sm active:scale-95 transition-transform text-slate-700"
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
           {active.messages.length === 0 ? (
             <HomeHero mode={active.mode} onPick={(s) => send(s)} userName={authProfile?.display_name || user?.email?.split("@")[0]} />
           ) : (
