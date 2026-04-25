@@ -9,6 +9,7 @@ import Home from "./pages/Home.tsx";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Lumina from "./pages/Lumina.tsx";
+import Landing from "./pages/Landing.tsx";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Lumina />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/app" element={<Lumina />} />
               <Route path="/legacy" element={<Home />} />
               <Route path="/showcase" element={<Index />} />
               <Route path="*" element={<NotFound />} />
