@@ -26,10 +26,10 @@ const Landing = () => {
           <span className="font-display font-bold text-xl tracking-tight">Lumina</span>
         </div>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <button onClick={goApp} className="hover:text-foreground transition-colors">Quiz</button>
-          <button onClick={goApp} className="hover:text-foreground transition-colors">Profile</button>
-          <button onClick={goApp} className="hover:text-foreground transition-colors">Chatbot</button>
-          <button onClick={goApp} className="hover:text-foreground transition-colors">How it works</button>
+          <button onClick={goApp} className="hover:text-foreground transition-colors text-base">Quiz</button>
+          <button onClick={goApp} className="hover:text-foreground transition-colors text-base">Profile</button>
+          <button onClick={goApp} className="hover:text-foreground transition-colors text-base">Chatbot</button>
+          <button onClick={goApp} className="hover:text-foreground transition-colors text-base">How it works</button>
         </nav>
         <button
           onClick={goApp}
@@ -184,7 +184,7 @@ const Landing = () => {
             <BookOpen className="w-3.5 h-3.5 text-primary-glow" />
             <span>Lumina · AI tutor that adapts to you</span>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-lg">
             Created by <span className="font-semibold text-foreground/90">Nagesh</span>
           </p>
         </div>
