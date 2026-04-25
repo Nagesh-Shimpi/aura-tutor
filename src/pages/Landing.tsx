@@ -1,20 +1,36 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Sparkles, ArrowRight, MessageCircle, User as UserIcon,
   CheckCircle2, Trophy, BookOpen, Brain, Zap, Target,
+  Leaf, Flower2, Sun,
 } from "lucide-react";
+
+type NatureTheme = "leafy" | "blossom" | "cream";
+const THEME_KEY = "lumina_nature_theme_v1";
+const THEMES: { id: NatureTheme; label: string; icon: any; chip: string; ring: string }[] = [
+  { id: "leafy",   label: "Leafy",   icon: Leaf,    chip: "bg-emerald-500/20 text-emerald-200", ring: "ring-emerald-300" },
+  { id: "blossom", label: "Blossom", icon: Flower2, chip: "bg-pink-500/20 text-pink-200",       ring: "ring-pink-300" },
+  { id: "cream",   label: "Cream",   icon: Sun,     chip: "bg-amber-500/20 text-amber-200",     ring: "ring-amber-300" },
+];
 
 const Landing = () => {
   const navigate = useNavigate();
   const goApp = () => navigate("/app");
+  const [theme, setTheme] = useState<NatureTheme>(() => {
+    if (typeof window === "undefined") return "blossom";
+    const saved = localStorage.getItem(THEME_KEY) as NatureTheme | null;
+    return saved && THEMES.some(t => t.id === saved) ? saved : "blossom";
+  });
+  useEffect(() => { localStorage.setItem(THEME_KEY, theme); }, [theme]);
 
   return (
-    <main className="min-h-screen w-full text-foreground overflow-x-hidden relative animated-hero-bg">
+    <main className={`min-h-screen w-full text-foreground overflow-x-hidden relative animated-hero-bg nature-theme theme-${theme}`}>
       {/* Floating ambient blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full bg-primary/30 blur-3xl animate-blob" />
-        <div className="absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "4s" }} />
-        <div className="absolute bottom-0 left-1/3 w-[380px] h-[380px] rounded-full bg-primary-glow/20 blur-3xl animate-blob" style={{ animationDelay: "8s" }} />
+        <div className="nt-blob-1 absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full blur-3xl animate-blob" />
+        <div className="nt-blob-4 absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full blur-3xl animate-blob" style={{ animationDelay: "4s" }} />
+        <div className="nt-blob-2 absolute bottom-0 left-1/3 w-[380px] h-[380px] rounded-full blur-3xl animate-blob" style={{ animationDelay: "8s" }} />
       </div>
 
       {/* Nav */}
@@ -31,12 +47,35 @@ const Landing = () => {
           <button onClick={goApp} className="hover:text-foreground transition-colors text-base">Chatbot</button>
           <button onClick={goApp} className="hover:text-foreground transition-colors text-base">How it works</button>
         </nav>
-        <button
-          onClick={goApp}
-          className="bg-gradient-primary text-white text-sm font-semibold rounded-full px-5 py-2.5 hover:scale-[1.03] transition-transform shadow-[0_10px_30px_-10px_hsl(258_90%_66%/0.7)]"
-        >
-          Open App
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Theme switcher */}
+          <div className="hidden sm:flex items-center gap-1 glass rounded-full p-1">
+            {THEMES.map((t) => {
+              const Icon = t.icon;
+              const active = theme === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                    active ? `${t.chip} ring-2 ${t.ring}` : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title={`${t.label} theme`}
+                  aria-pressed={active}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={goApp}
+            className="nt-accent-gradient text-white text-sm font-semibold rounded-full px-5 py-2.5 hover:scale-[1.03] transition-transform shadow-[0_10px_30px_-10px_rgba(0,0,0,0.4)]"
+          >
+            Open App
+          </button>
+        </div>
       </header>
 
       {/* Hero */}
