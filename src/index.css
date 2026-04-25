@@ -287,3 +287,103 @@
   background-size: 300% 300%;
   animation: heroGradient 14s ease infinite;
 }
+
+/* ============================================================
+   Nature theme variants — applied to .nature-theme wrapper.
+   Themes: leafy (green), blossom (pink), cream (warm).
+   Each retargets the ambient blob colors + accent gradient
+   used across chat, topics, quiz, progress and AI coach.
+   ============================================================ */
+.nature-theme { --nt-accent-from: 168 76% 42%; --nt-accent-via: 152 60% 48%; --nt-accent-to: 96 65% 55%; }
+
+.nature-theme .nt-blob-1 { background-color: hsl(var(--nt-blob-1) / 0.55); }
+.nature-theme .nt-blob-2 { background-color: hsl(var(--nt-blob-2) / 0.50); }
+.nature-theme .nt-blob-3 { background-color: hsl(var(--nt-blob-3) / 0.55); }
+.nature-theme .nt-blob-4 { background-color: hsl(var(--nt-blob-4) / 0.55); }
+.nature-theme .nt-blob-5 { background-color: hsl(var(--nt-blob-5) / 0.50); }
+.nature-theme .nt-blob-6 { background-color: hsl(var(--nt-blob-6) / 0.50); }
+.nature-theme .nt-blob-7 { background-color: hsl(var(--nt-blob-7) / 0.65); }
+
+.nature-theme .nt-accent-gradient {
+  background: linear-gradient(135deg,
+    hsl(var(--nt-accent-from)),
+    hsl(var(--nt-accent-via)),
+    hsl(var(--nt-accent-to)));
+}
+.nature-theme .nt-accent-text {
+  background: linear-gradient(135deg,
+    hsl(var(--nt-accent-from)),
+    hsl(var(--nt-accent-via)),
+    hsl(var(--nt-accent-to)));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.nature-theme .nt-surface {
+  background-color: hsl(var(--nt-surface) / 0.85);
+  border-color: hsl(var(--nt-border) / 0.6);
+}
+.nature-theme .nt-page-bg {
+  background: linear-gradient(135deg,
+    hsl(var(--nt-bg-1)) 0%,
+    hsl(var(--nt-bg-2)) 35%,
+    hsl(var(--nt-bg-3)) 70%,
+    hsl(var(--nt-bg-4)) 100%);
+}
+
+/* Leafy green — calm forest */
+.theme-leafy {
+  --nt-bg-1: 0 0% 100%;
+  --nt-bg-2: 142 76% 95%;
+  --nt-bg-3: 96 70% 94%;
+  --nt-bg-4: 0 0% 100%;
+  --nt-blob-1: 152 70% 60%;
+  --nt-blob-2: 142 65% 55%;
+  --nt-blob-3: 96 70% 65%;
+  --nt-blob-4: 168 70% 55%;
+  --nt-blob-5: 110 60% 60%;
+  --nt-blob-6: 84 65% 65%;
+  --nt-blob-7: 60 80% 85%;
+  --nt-accent-from: 152 70% 38%;
+  --nt-accent-via: 142 65% 45%;
+  --nt-accent-to: 96 65% 50%;
+  --nt-surface: 0 0% 100%;
+  --nt-border: 142 50% 75%;
+}
+/* Blossom pink — cherry bloom */
+.theme-blossom {
+  --nt-bg-1: 0 0% 100%;
+  --nt-bg-2: 330 100% 97%;
+  --nt-bg-3: 350 100% 96%;
+  --nt-bg-4: 0 0% 100%;
+  --nt-blob-1: 330 90% 75%;
+  --nt-blob-2: 350 90% 78%;
+  --nt-blob-3: 300 80% 80%;
+  --nt-blob-4: 340 95% 80%;
+  --nt-blob-5: 280 80% 80%;
+  --nt-blob-6: 360 90% 82%;
+  --nt-blob-7: 30 90% 88%;
+  --nt-accent-from: 330 80% 55%;
+  --nt-accent-via: 320 75% 58%;
+  --nt-accent-to: 280 75% 60%;
+  --nt-surface: 0 0% 100%;
+  --nt-border: 330 80% 88%;
+}
+/* Cream — warm sand */
+.theme-cream {
+  --nt-bg-1: 40 80% 97%;
+  --nt-bg-2: 35 90% 94%;
+  --nt-bg-3: 25 85% 93%;
+  --nt-bg-4: 40 80% 97%;
+  --nt-blob-1: 38 90% 78%;
+  --nt-blob-2: 28 90% 78%;
+  --nt-blob-3: 48 90% 78%;
+  --nt-blob-4: 18 85% 80%;
+  --nt-blob-5: 60 80% 82%;
+  --nt-blob-6: 22 90% 80%;
+  --nt-blob-7: 8 80% 82%;
+  --nt-accent-from: 28 80% 50%;
+  --nt-accent-via: 18 78% 55%;
+  --nt-accent-to: 38 80% 55%;
+  --nt-surface: 40 80% 99%;
+  --nt-border: 30 70% 82%;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame, Zap, PlayCircle, ArrowRight, ArrowLeft, Trophy, History } from "lucide-react";
+import { Sparkles, Plus, Search, MessageSquare, Trash2, Send, GraduationCap, Code2, Menu, Loader2, X, User, BookOpen, Brain, BarChart3, LogOut, Flame, Zap, PlayCircle, ArrowRight, ArrowLeft, Trophy, History, Leaf, Flower2, Sun, Lightbulb, FileText, HelpCircle, Wand2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -18,6 +18,21 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const STORAGE_KEY = "lumina_chats_v1";
 const ACTIVE_KEY = "lumina_active_v1";
+const THEME_KEY = "lumina_nature_theme_v1";
+
+type NatureTheme = "leafy" | "blossom" | "cream";
+const THEMES: { id: NatureTheme; label: string; icon: any; chip: string; ring: string }[] = [
+  { id: "leafy",   label: "Leafy",   icon: Leaf,    chip: "bg-emerald-100 text-emerald-700", ring: "ring-emerald-400" },
+  { id: "blossom", label: "Blossom", icon: Flower2, chip: "bg-pink-100 text-pink-700",       ring: "ring-pink-400" },
+  { id: "cream",   label: "Cream",   icon: Sun,     chip: "bg-amber-100 text-amber-700",     ring: "ring-amber-400" },
+];
+
+const QUICK_ACTIONS: { label: string; prompt: string; icon: any }[] = [
+  { label: "Explain",   prompt: "Explain this simply with an example: ", icon: Lightbulb },
+  { label: "Quiz me",   prompt: "Give me a 5-question quiz on: ",        icon: HelpCircle },
+  { label: "Summarize", prompt: "Summarize the key ideas of: ",          icon: FileText },
+  { label: "Improve",   prompt: "Improve and refactor this: ",           icon: Wand2 },
+];
 
 type Mode = "tutor" | "code";
 type Msg = { role: "user" | "assistant"; content: string };
@@ -61,6 +76,13 @@ const Lumina = () => {
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
   const [panel, setPanel] = useState<Panel>(null);
+  const [theme, setTheme] = useState<NatureTheme>(() => {
+    if (typeof window === "undefined") return "blossom";
+    const saved = localStorage.getItem(THEME_KEY) as NatureTheme | null;
+    return saved && THEMES.some(t => t.id === saved) ? saved : "blossom";
+  });
+  useEffect(() => { localStorage.setItem(THEME_KEY, theme); }, [theme]);
+  const themeClass = `nature-theme theme-${theme}`;
   const [recentAttempts, setRecentAttempts] = useState<Array<{ id: string; score: number; total: number; xp_earned: number; created_at: string; topic: { title: string; icon: string } | null }>>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -590,19 +612,16 @@ const Lumina = () => {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col min-w-0 relative text-slate-900 overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f0fdf4_35%,#fdf2f8_70%,#ffffff_100%)]">
-        {/* Nature-inspired ambient backdrop: soft greens, blossom pinks, cream highlights */}
+      <main className={`flex-1 flex flex-col min-w-0 relative text-slate-900 overflow-hidden nt-page-bg ${themeClass}`}>
+        {/* Nature-inspired themable backdrop */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {/* leafy greens */}
-          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-emerald-300/55 blur-3xl animate-blob" />
-          <div className="absolute bottom-0 -left-10 w-96 h-96 rounded-full bg-green-300/45 blur-3xl animate-blob" style={{ animationDelay: "5s" }} />
-          <div className="absolute top-1/2 left-1/3 w-72 h-72 rounded-full bg-lime-200/55 blur-3xl animate-blob" style={{ animationDelay: "8s" }} />
-          {/* blossom pinks */}
-          <div className="absolute top-8 right-0 w-80 h-80 rounded-full bg-pink-300/55 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
-          <div className="absolute bottom-10 right-10 w-72 h-72 rounded-full bg-rose-300/50 blur-3xl animate-blob" style={{ animationDelay: "6.5s" }} />
-          <div className="absolute top-1/3 right-1/4 w-56 h-56 rounded-full bg-fuchsia-200/50 blur-3xl animate-blob" style={{ animationDelay: "1.5s" }} />
-          {/* cream warmth */}
-          <div className="absolute bottom-1/3 left-1/2 w-64 h-64 rounded-full bg-amber-100/70 blur-3xl animate-blob" style={{ animationDelay: "4s" }} />
+          <div className="nt-blob-1 absolute -top-20 -left-20 w-80 h-80 rounded-full blur-3xl animate-blob" />
+          <div className="nt-blob-2 absolute bottom-0 -left-10 w-96 h-96 rounded-full blur-3xl animate-blob" style={{ animationDelay: "5s" }} />
+          <div className="nt-blob-3 absolute top-1/2 left-1/3 w-72 h-72 rounded-full blur-3xl animate-blob" style={{ animationDelay: "8s" }} />
+          <div className="nt-blob-4 absolute top-8 right-0 w-80 h-80 rounded-full blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+          <div className="nt-blob-5 absolute bottom-10 right-10 w-72 h-72 rounded-full blur-3xl animate-blob" style={{ animationDelay: "6.5s" }} />
+          <div className="nt-blob-6 absolute top-1/3 right-1/4 w-56 h-56 rounded-full blur-3xl animate-blob" style={{ animationDelay: "1.5s" }} />
+          <div className="nt-blob-7 absolute bottom-1/3 left-1/2 w-64 h-64 rounded-full blur-3xl animate-blob" style={{ animationDelay: "4s" }} />
           {/* subtle organic dot texture */}
           <div
             className="absolute inset-0 opacity-[0.07] mix-blend-multiply"
@@ -615,21 +634,53 @@ const Lumina = () => {
         </div>
 
         {/* Header */}
-        <header className="relative z-10 px-4 md:px-6 py-3 flex items-center gap-3 border-b border-pink-100 bg-white/70 backdrop-blur-md">
+        <header className="relative z-10 px-4 md:px-6 py-3 flex items-center gap-3 border-b nt-surface backdrop-blur-md">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden w-9 h-9 rounded-xl bg-white/80 border border-pink-100 shadow-sm flex items-center justify-center text-slate-700"
+            className="md:hidden w-10 h-10 rounded-2xl nt-surface border shadow-md active:scale-95 transition-transform flex items-center justify-center text-slate-700"
             aria-label="Open sidebar"
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-display font-bold truncate bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-clip-text text-transparent">{active.title}</h1>
+            <h1 className="text-sm font-display font-bold truncate nt-accent-text">{active.title}</h1>
             <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${active.mode === "code" ? "bg-sky-500" : "bg-violet-500"} animate-pulse`} />
+              <span className="w-1.5 h-1.5 rounded-full nt-accent-gradient animate-pulse" />
               {active.mode === "code" ? "Code Mode · pair programmer" : "Tutor Mode · adaptive teaching"}
             </p>
           </div>
+          {/* Theme switcher */}
+          <div className="hidden sm:flex items-center gap-1 nt-surface border rounded-full p-1 shadow-sm">
+            {THEMES.map((t) => {
+              const Icon = t.icon;
+              const active = theme === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  title={`${t.label} theme`}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                    active ? `${t.chip} ring-2 ${t.ring} shadow` : "text-slate-500 hover:text-slate-800"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Mobile theme cycler */}
+          <button
+            onClick={() => {
+              const idx = THEMES.findIndex((t) => t.id === theme);
+              setTheme(THEMES[(idx + 1) % THEMES.length].id);
+            }}
+            className="sm:hidden w-10 h-10 rounded-2xl nt-surface border shadow-md flex items-center justify-center"
+            aria-label="Change theme"
+          >
+            {(() => { const T = THEMES.find(t => t.id === theme)!.icon; return <T className="w-4 h-4 text-slate-700" />; })()}
+          </button>
         </header>
 
         {/* Messages */}
@@ -644,11 +695,11 @@ const Lumina = () => {
                 ))}
                 {thinking && (
                   <div className="flex gap-3 animate-fade-in">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 flex items-center justify-center shrink-0 shadow-lg shadow-violet-300/50">
+                    <div className="w-8 h-8 rounded-full nt-accent-gradient flex items-center justify-center shrink-0 shadow-lg">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
-                    <div className="rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2 bg-white/80 backdrop-blur border border-pink-100 shadow-sm">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500" />
+                    <div className="rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2 nt-surface border backdrop-blur shadow-sm">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span className="text-xs text-slate-500">Thinking…</span>
                     </div>
                   </div>
@@ -661,7 +712,24 @@ const Lumina = () => {
         {/* Composer */}
         <div className="relative z-10 px-4 md:px-6 pb-5 pt-2">
           <div className="max-w-3xl mx-auto">
-            <div className="rounded-3xl p-2 flex items-end gap-1.5 bg-white/90 backdrop-blur-xl border border-pink-200 shadow-[0_20px_60px_-20px_rgba(168,85,247,0.35)]">
+            {/* Quick actions */}
+            <div className="flex flex-wrap gap-1.5 mb-2 px-1">
+              {QUICK_ACTIONS.map((qa) => {
+                const Icon = qa.icon;
+                return (
+                  <button
+                    key={qa.label}
+                    onClick={() => setInput((prev) => (prev ? prev : qa.prompt))}
+                    className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold nt-surface border shadow-sm hover:scale-105 active:scale-95 transition-transform text-slate-700"
+                    title={qa.prompt}
+                  >
+                    <Icon className="w-3 h-3 group-hover:rotate-6 transition-transform" />
+                    {qa.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="rounded-3xl p-2 flex items-end gap-1.5 nt-surface backdrop-blur-xl border shadow-[0_20px_60px_-20px_rgba(0,0,0,0.18)]">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -678,7 +746,7 @@ const Lumina = () => {
               <button
                 onClick={() => send()}
                 disabled={loading || !input.trim()}
-                className="h-10 w-10 rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 shrink-0 shadow-lg shadow-fuchsia-300/50"
+                className="h-10 w-10 rounded-2xl nt-accent-gradient text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 shrink-0 shadow-lg"
                 aria-label="Send"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -689,29 +757,51 @@ const Lumina = () => {
             </p>
           </div>
         </div>
+
+        {/* Mobile bottom nav — quick access to features */}
+        <nav className="md:hidden relative z-10 flex items-center justify-around py-1.5 nt-surface border-t backdrop-blur">
+          {[
+            { icon: BookOpen,  label: "Topics",   onClick: () => setPanel("topics") },
+            { icon: Brain,     label: "Quiz",     onClick: () => setPanel("quiz") },
+            { icon: BarChart3, label: "Progress", onClick: () => setPanel("progress") },
+            { icon: Sparkles,  label: "Coach",    onClick: () => setPanel("tutor") },
+          ].map((b) => {
+            const Icon = b.icon;
+            return (
+              <button
+                key={b.label}
+                onClick={b.onClick}
+                className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl active:scale-95 transition-transform text-slate-600"
+              >
+                <Icon className="w-4 h-4" />
+                <span className="text-[9px] font-semibold">{b.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </main>
 
       {/* Feature Panels (slide-over) */}
       <Sheet open={panel !== null} onOpenChange={(o) => !o && setPanel(null)}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-md p-0 overflow-hidden border-l border-pink-200 [&>button]:hidden bg-white"
+          className={`w-full sm:max-w-md p-0 overflow-hidden border-l [&>button]:hidden bg-white ${themeClass}`}
         >
-          <div className="h-full flex flex-col relative overflow-hidden bg-white text-slate-900">
+          <div className="h-full flex flex-col relative overflow-hidden nt-page-bg text-slate-900">
             {/* Floating color blobs (matches home hero) */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-violet-300/50 blur-3xl animate-blob" />
-              <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-pink-300/50 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
-              <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-amber-200/60 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
-              <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-emerald-200/60 blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
-              <div className="absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-sky-200/50 blur-3xl animate-blob" style={{ animationDelay: "4.5s" }} />
+              <div className="nt-blob-1 absolute -top-24 -left-16 w-72 h-72 rounded-full blur-3xl animate-blob" />
+              <div className="nt-blob-2 absolute top-10 right-0 w-80 h-80 rounded-full blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+              <div className="nt-blob-3 absolute bottom-0 left-1/3 w-96 h-96 rounded-full blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
+              <div className="nt-blob-4 absolute bottom-10 right-10 w-64 h-64 rounded-full blur-3xl animate-blob" style={{ animationDelay: "9s" }} />
+              <div className="nt-blob-5 absolute top-1/2 left-1/2 w-72 h-72 rounded-full blur-3xl animate-blob" style={{ animationDelay: "4.5s" }} />
             </div>
 
             {/* Sticky back-to-home bar */}
-            <div className="relative z-20 px-3 py-2.5 flex items-center gap-2 bg-white/70 backdrop-blur-md border-b border-pink-100">
+            <div className="relative z-20 px-3 py-2.5 flex items-center gap-2 nt-surface backdrop-blur-md border-b">
               <button
                 onClick={() => setPanel(null)}
-                className="group flex items-center gap-1.5 pl-1.5 pr-3 py-1.5 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 text-white text-xs font-semibold shadow-md hover:scale-[1.03] transition-transform"
+                className="group flex items-center gap-1.5 pl-1.5 pr-3 py-1.5 rounded-full nt-accent-gradient text-white text-xs font-semibold shadow-md hover:scale-[1.03] transition-transform"
                 aria-label="Back to home"
               >
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -724,6 +814,25 @@ const Lumina = () => {
                   panel === "progress" ? "Progress" :
                   panel === "tutor" ? "AI Coach" : ""}
               </span>
+              {/* Theme switcher inside panels */}
+              <div className="flex items-center gap-0.5 nt-surface border rounded-full p-0.5">
+                {THEMES.map((t) => {
+                  const Icon = t.icon;
+                  const isActive = theme === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setTheme(t.id)}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                        isActive ? `${t.chip} ring-2 ${t.ring}` : "text-slate-400 hover:text-slate-700"
+                      }`}
+                      aria-label={`${t.label} theme`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Panel content (themed wrapper) */}
