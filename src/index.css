@@ -268,3 +268,22 @@
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-6px); opacity: 1; }
 }
+
+/* Animated hero gradient */
+@keyframes heroGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animated-hero-bg {
+  background: linear-gradient(
+    120deg,
+    hsl(258 90% 14%) 0%,
+    hsl(230 95% 18%) 25%,
+    hsl(280 80% 16%) 50%,
+    hsl(199 95% 18%) 75%,
+    hsl(258 90% 14%) 100%
+  );
+  background-size: 300% 300%;
+  animation: heroGradient 14s ease infinite;
+}
