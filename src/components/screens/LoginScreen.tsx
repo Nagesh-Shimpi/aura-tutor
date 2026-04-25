@@ -88,14 +88,14 @@ export const LoginScreen = () => {
           </div>
         </div>
 
-        <button onClick={submit} disabled={loading} className="w-full py-3 rounded-2xl bg-gradient-primary text-white font-semibold text-xs shadow-[0_10px_30px_-8px_hsl(258_90%_66%/0.6)] hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
+        <button onClick={submit} disabled={loading} className="w-full py-3 rounded-2xl nt-accent-gradient text-white font-semibold text-sm shadow-[0_10px_30px_-8px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {mode === "signin" ? "Sign In" : "Sign Up"}
         </button>
 
-        <p className="text-[11px] text-center text-muted-foreground mt-2">
+        <p className="text-xs text-center text-muted-foreground mt-2">
           {mode === "signin" ? "New here? " : "Have an account? "}
-          <button onClick={()=>setMode(mode === "signin" ? "signup" : "signin")} className="text-primary-glow font-semibold">
+          <button onClick={()=>setMode(mode === "signin" ? "signup" : "signin")} className="nt-accent-text font-semibold underline-offset-2 hover:underline">
             {mode === "signin" ? "Create account" : "Sign in"}
           </button>
         </p>
