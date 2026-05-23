@@ -1,8 +1,18 @@
-import { Mail, Lock, Loader2, LogOut } from "lucide-react";
+import { Mail, Lock, Loader2, LogOut, GraduationCap, Brain, Code2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+
+const PENDING_INTENT_KEY = "lumina_pending_intent_v1";
+
+type Intent = { label: string; icon: any; mode: "tutor" | "code"; prompt: string };
+const INTENTS: Intent[] = [
+  { label: "I'm here to learn",   icon: GraduationCap, mode: "tutor", prompt: "I'm here to learn — pick a great starter topic and teach me step by step." },
+  { label: "I need a quiz",       icon: Brain,         mode: "tutor", prompt: "Quiz me with 5 mixed-difficulty questions and grade my answers." },
+  { label: "Help me code",        icon: Code2,         mode: "code",  prompt: "Help me code — ask what I'm building and suggest a starting snippet." },
+  { label: "Surprise me",         icon: Sparkles,      mode: "tutor", prompt: "Surprise me with a fascinating concept I've probably never heard of." },
+];
 
 export const LoginScreen = () => {
   const { user, profile, signOut } = useAuth();
@@ -11,11 +21,17 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [intent, setIntent] = useState<Intent | null>(null);
 
   const submit = async () => {
     if (!email || !password) { toast.error("Fill all fields"); return; }
     setLoading(true);
     try {
+      if (intent) {
+        try {
+          localStorage.setItem(PENDING_INTENT_KEY, JSON.stringify({ mode: intent.mode, prompt: intent.prompt }));
+        } catch {}
+      }
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
@@ -92,6 +108,29 @@ export const LoginScreen = () => {
           {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {mode === "signin" ? "Sign In" : "Sign Up"}
         </button>
+
+        <div className="mt-1">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 text-center">
+            One-tap start {intent && <span className="nt-accent-text normal-case tracking-normal">· {intent.label}</span>}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {INTENTS.map((it) => {
+              const Icon = it.icon;
+              const selected = intent?.label === it.label;
+              return (
+                <button
+                  key={it.label}
+                  type="button"
+                  onClick={() => setIntent(selected ? null : it)}
+                  className={`glass-card rounded-2xl px-2.5 py-2 flex items-center gap-2 text-[11px] font-medium text-left transition-all active:scale-95 ${selected ? "ring-2 ring-primary nt-accent-text" : "hover:scale-[1.02]"}`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{it.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <p className="text-xs text-center text-muted-foreground mt-2">
           {mode === "signin" ? "New here? " : "Have an account? "}
