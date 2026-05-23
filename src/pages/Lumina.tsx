@@ -103,13 +103,29 @@ const Lumina = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed: Chat[] = raw ? JSON.parse(raw) : [];
       const active = localStorage.getItem(ACTIVE_KEY) || "";
+      let pending: { mode?: Mode; prompt?: string } | null = null;
+      try {
+        const pRaw = localStorage.getItem(PENDING_INTENT_KEY);
+        if (pRaw) {
+          pending = JSON.parse(pRaw);
+          localStorage.removeItem(PENDING_INTENT_KEY);
+        }
+      } catch {}
       if (parsed.length === 0) {
-        const c = newChat("tutor");
+        const c = newChat(pending?.mode || "tutor");
         setChats([c]);
         setActiveId(c.id);
+        if (pending?.prompt) setInput(pending.prompt);
       } else {
         setChats(parsed);
-        setActiveId(parsed.some((c) => c.id === active) ? active : parsed[0].id);
+        const startId = parsed.some((c) => c.id === active) ? active : parsed[0].id;
+        setActiveId(startId);
+        if (pending) {
+          const c = newChat(pending.mode || "tutor");
+          setChats([c, ...parsed]);
+          setActiveId(c.id);
+          if (pending.prompt) setInput(pending.prompt);
+        }
       }
     } catch {
       const c = newChat("tutor");
