@@ -55,6 +55,8 @@ const newChat = (mode: Mode): Chat => ({
   updatedAt: Date.now(),
 });
 
+const PENDING_INTENT_KEY = "lumina_pending_intent_v1";
+
 const SUGGESTIONS: Record<Mode, string[]> = {
   tutor: [
     "Explain recursion step by step",
