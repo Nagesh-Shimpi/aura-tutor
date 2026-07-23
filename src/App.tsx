@@ -10,6 +10,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Lumina from "./pages/Lumina.tsx";
 import Landing from "./pages/Landing.tsx";
+import OAuthConsent from "./pages/OAuthConsent.tsx";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/app" element={<Lumina />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/legacy" element={<Home />} />
               <Route path="/showcase" element={<Index />} />
               <Route path="*" element={<NotFound />} />
